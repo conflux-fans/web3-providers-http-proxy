@@ -1,0 +1,16 @@
+{
+  "name": "web3-provider-proxy-conflux",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "web3-core-helpers": "^1.2.9",
+    "xhr2-cookies": "^1.1.0"
+  }
+}

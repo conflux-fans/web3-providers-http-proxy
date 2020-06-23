@@ -1,5 +1,5 @@
 # web3-provider-proxy
-An http provider port from web3, which can proxy eth rpc request to conflux.
+An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).
 
 
 ### rpc that can't handle by this proxy

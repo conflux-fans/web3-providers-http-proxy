@@ -121,6 +121,7 @@ HttpProvider.prototype.send = function (payload, callback) {
     };
 
     try {
+        console.log('Params: ', JSON.stringify(payload.params));
         request.send(JSON.stringify(payload));
     } catch(error) {
         this.connected = false;

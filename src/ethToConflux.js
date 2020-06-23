@@ -1,7 +1,7 @@
 
 const tagMapper = {
     "earliest": "earliest",
-    "latest": "latest_mined",
+    "latest": "latest_state",
     "pending": "latest_state",
 };
 
@@ -29,6 +29,12 @@ const bridge = {
                     if (toMap) {
                         params[1] = toMap;
                     }
+                    if (params[0] && params[0].gas && Number.isInteger(params[0].gas)) {
+                        params[0].gas = `0x${params[0].gas.toString(16)}`;
+                    }
+                    if (params[0] && params[0].gasPrice && Number.isInteger(params[0].gasPrice)) {
+                        params[0].gasPrice = `0x${params[0].gasPrice.toString(16)}`;
+                    }
                 }
             }
             return params;
@@ -38,10 +44,12 @@ const bridge = {
 };
 
 function ethToConflux(payload) {
+    const oldMethod = payload.method;
     const handler = bridge[payload.method];
     if(!handler) {
         return emptyFn;
     }
+    console.log(`Mapping "${oldMethod}" to "${handler.method}"`);
     payload.method = handler.method;
     payload.params = handler.input(payload.params);
     return handler.output;

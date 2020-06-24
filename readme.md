@@ -6,15 +6,19 @@ An http provider port from web3, which can proxy eth rpc request to [conflux](ht
 
 Install through npm
 ```sh
-$ npm install web3-provider-proxy
+$ npm install web3-providers-http-proxy
 ```
 Initiate and set to web3 or contract object.
 
 ```js
-const HttpProvider = require('web3-provider-proxy');
-const provider = new HttpProvider('http://localhost:12539');
+const {HttpProvider, ethToConflux} = require('web3-providers-http-proxy');
+const provider = new HttpProvider('http://localhost:12539', {
+    chainAdaptor: ethToConflux
+});
 web3.setProvider(provider);
 ```
+
+### how to write an adaptor
 
 
 ### Implemented rpc method

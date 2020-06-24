@@ -1,15 +1,12 @@
+const emptyFn = require('./util').emptyFn;
 
+// TO MAP latest_checkpoint
 const tagMapper = {
     "earliest": "earliest",
     "latest": "latest_state",
     "pending": "latest_state",
 };
 
-// latest_checkpoint
-
-function emptyFn(data) {
-    return data;
-}
 
 const bridge = {
     'eth_blockNumber': {

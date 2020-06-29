@@ -30,7 +30,7 @@ function formatInput(params) {
 }
 
 const bridge = {
-    'eth_blockNumber': {
+    "eth_blockNumber": {
         method: "cfx_epochNumber",
         input: emptyFn,
         output: emptyFn
@@ -49,6 +49,11 @@ const bridge = {
             }
             return result;
         }
+    },
+    "eth_sendRawTransaction": {
+        method: "cfx_sendRawTransaction",
+        input: emptyFn,
+        output: emptyFn,
     }
 };
 

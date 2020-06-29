@@ -47,6 +47,7 @@ const bridge = {
             if (result && result.gasUsed) {
                 return result.gasUsed
             }
+            return result;
         }
     }
 };

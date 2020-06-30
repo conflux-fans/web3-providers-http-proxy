@@ -1,39 +1,62 @@
-const emptyFn = require('./util').emptyFn;
+const {emptyFn, numToHex} = require('./util');
+const debug = require('debug')('ethToConflux');
 
 // TO MAP latest_checkpoint
-const tagMapper = {
+const TAG_MAP = {
     "earliest": "earliest",
     "latest": "latest_state",
     "pending": "latest_state",
 };
 
-
 function formatInput(params) {
     // 1. add nonce parameter to tx object
     // TODO
     // 2. block number tag map
-    if (Array.isArray(params)) {
-        if (params.length == 2) {
-            let toMap = tagMapper[params[1]];
-            if (toMap) {
-                params[1] = toMap;
-            }
-            if (params[0] && params[0].gas && Number.isInteger(params[0].gas)) {
-                params[0].gas = `0x${params[0].gas.toString(16)}`;
-            }
-            if (params[0] && params[0].gasPrice && Number.isInteger(params[0].gasPrice)) {
-                params[0].gasPrice = `0x${params[0].gasPrice.toString(16)}`;
-            }
+    if (params[0]) {
+        if (params[0].gas && Number.isInteger(params[0].gas)) {
+            params[0].gas = numToHex(params[0].gas);
+        }
+        if (params[0].gasPrice && Number.isInteger(params[0].gasPrice)) {
+            params[0].gasPrice = numToHex(params[0].gasPrice);
         }
     }
+    mapParamsTagAtIndex(params, 1);
     return params;
 }
 
 const bridge = {
     "eth_blockNumber": {
         method: "cfx_epochNumber",
-        input: emptyFn,
-        output: emptyFn
+        input: function(params) {
+            mapParamsTagAtIndex(params, 0);
+        }
+    },
+    "eth_sendRawTransaction": {
+        method: "cfx_sendRawTransaction"
+    },
+    "eth_getBalance": {
+        method: "cfx_getBalance",
+        input: function(params) {
+            mapParamsTagAtIndex(params, 1);
+        }
+    },
+    "eth_getCode": {
+        method: "cfx_getCode",
+        input: function(params) {
+            mapParamsTagAtIndex(params, 1);
+        }
+    },
+    "eth_getTransactionCount": {
+        method: "cfx_getNextNonce",
+        input: function(params) {
+            mapParamsTagAtIndex(params, 1);
+        }
+    },
+    "eth_gasPrice": {
+        method: "cfx_gasPrice"
+    },
+    "eth_accounts": {
+        method: "accounts"
     },
     "eth_call": {
         method: "cfx_call",
@@ -49,11 +72,6 @@ const bridge = {
             }
             return result;
         }
-    },
-    "eth_sendRawTransaction": {
-        method: "cfx_sendRawTransaction",
-        input: emptyFn,
-        output: emptyFn,
     }
 };
 
@@ -63,10 +81,22 @@ function ethToConflux(payload) {
     if (!handler) {
         return emptyFn;
     }
-    console.log(`Mapping "${oldMethod}" to "${handler.method}"`);
+    debug(`Mapping "${oldMethod}" to "${handler.method}"`);
     payload.method = handler.method;
-    payload.params = handler.input(payload.params);
-    return handler.output;
+    if (handler.input) {
+        payload.params = handler.input(payload.params);
+    }
+    return handler.output || emptyFn;
+}
+
+function mapTag(tag) {
+    return TAG_MAP[tag] || tag;
+}
+
+function mapParamsTagAtIndex(params, index) {
+    if (params[index]) {
+        params[index] = mapTag(params[index]);
+    }
 }
 
 module.exports = ethToConflux;

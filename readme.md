@@ -12,7 +12,7 @@ Initiate and set to web3 or contract object.
 
 ```js
 const {HttpProvider, ethToConflux} = require('web3-providers-http-proxy');
-const provider = new HttpProvider('http://localhost:12539', {
+const provider = new HttpProvider('http://localhost:12537', {
     chainAdaptor: ethToConflux
 });
 web3.setProvider(provider);

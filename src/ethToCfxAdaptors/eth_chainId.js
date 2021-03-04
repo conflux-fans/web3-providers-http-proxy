@@ -1,0 +1,25 @@
+const Adaptor = require('../JsonRPCAdaptor');
+const format = require('../format');
+const util = require('../util');
+
+/**
+ * eth method: 
+ * cfx method:
+ * 
+ * inputs example:
+ * 
+ * outputs example:
+ {
+  "id": 83,
+  "jsonrpc": "2.0",
+  "result": "0x3d" // 61
+}
+ */
+async function outputAdaptor(response) {
+    if (response && response.result && response.result.chainId) {
+        response.result = response.result.chainId;
+    }
+    return response;
+}
+
+module.exports = new Adaptor(util.asyncEmptyFn, outputAdaptor);

@@ -18,19 +18,9 @@ const provider = new HttpProvider('http://localhost:12537', {
 web3.setProvider(provider);
 ```
 
-### how to write an adaptor
-
-
 ### Implemented rpc method
 
 1. eth_blockNumber -> cfx_epochNumber
 2. eth_call -> cfx_call
 3. eth_sendRawTransaction -> cfx_sendRawTransaction
 4. eth_estimateGas -> cfx_estimateGasAndCollateral
-
-
-### rpc that can't handle by this proxy
-
-1. which conflux doesn't have respond rpc
-2. parameter not compatible
-3. response not compatible

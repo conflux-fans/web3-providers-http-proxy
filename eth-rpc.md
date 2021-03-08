@@ -36,9 +36,9 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 * eth_blockNumber -- epochNumber
 * eth_getBalance
 * eth_getStorageAt
-* eth_getTransactionCount -- 某个地址发送交易的数量
-* eth_getBlockTransactionCountByHash -- block 交易的数量
-* eth_getBlockTransactionCountByNumber  -- block 交易的数量
+* eth_getTransactionCount
+* eth_getBlockTransactionCountByHash
+* eth_getBlockTransactionCountByNumber
 * eth_getCode
 * eth_sign
 * eth_signTransaction

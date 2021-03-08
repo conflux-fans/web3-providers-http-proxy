@@ -27,9 +27,8 @@ const util = require('../util');
     s: DATA, 32 Bytes - ECDSA signature s
  */
 async function outputAdaptor(response) {
-    if (response && response.result) {
-        format.formatTransaction(response.result);
-    }
+  if (!response || !response.result) return;
+  format.formatTransaction(response.result);
 }
 
 module.exports = new Adaptor(util.asyncEmptyFn, outputAdaptor);

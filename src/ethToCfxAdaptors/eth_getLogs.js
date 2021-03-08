@@ -18,19 +18,18 @@ const util = require('../util');
  */
 
 async function inputAdaptor(params) {
-    if (params.length > 0) {
-        let fromBlock = params[0].fromBlock;
-        let toBlock = params[0].toBlock;
-        params[0].fromEpoch = format.formatEpoch(fromBlock);
-        params[0].toEpoch = format.formatEpoch(toBlock);
-    }
+  if (params.length > 0) {
+    let fromBlock = params[0].fromBlock;
+    let toBlock = params[0].toBlock;
+    params[0].fromEpoch = format.formatEpoch(fromBlock);
+    params[0].toEpoch = format.formatEpoch(toBlock);
+  }
 }
 
 async function outputAdaptor(response) {
-    if (response && response.result) {
-        let logs = response.result;
-        logs.forEach(l => (l.address = format.formatHexAddress(l.address)));
-    }
+  if (!response || !response.result) return;
+  let logs = response.result;
+  logs.forEach(l => (l.address = format.formatHexAddress(l.address)));
 }
 
 module.exports = new Adaptor(inputAdaptor, outputAdaptor);

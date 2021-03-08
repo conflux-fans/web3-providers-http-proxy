@@ -17,13 +17,12 @@ const util = require('../util');
  */
 
 async function inputAdaptor(params) {
-    format.formatCommonInput(params, this.cfx.networkId);
+  format.formatCommonInput(params, this.cfx.networkId);
 }
 
 async function outputAdaptor(response) {
-    if (response && response.result && response.result.gasUsed) {
-        response.result = response.result.gasUsed;
-    }
+  if (!response || !response.result) return;
+  response.result = response.result.gasUsed;
 }
 
 module.exports = new Adaptor(inputAdaptor, outputAdaptor);

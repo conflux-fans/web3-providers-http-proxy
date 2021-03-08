@@ -13,9 +13,9 @@ const util = require('../util');
  */
 
 async function inputAdaptor(params) {
-    if (params.length > 0) {
-        params[0] = await format.formatTxParams(this.cfx, params[0]);  // TODO deal the cfx
-    }
+  if (params.length > 0) {
+    params[0] = await format.formatTxParams(this.cfx, params[0]);  // TODO deal the cfx
+  }
 }
 
 module.exports = new Adaptor(inputAdaptor);

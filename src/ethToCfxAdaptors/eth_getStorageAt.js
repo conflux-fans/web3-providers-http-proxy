@@ -16,7 +16,8 @@ const util = require('../util');
  }
  */
 async function inputAdaptor(params) {
-    format.formatEpochOfParams(params, 2);
+  params[0] = format.formatAddress(params[0], this.cfx.networkId);
+  format.formatEpochOfParams(params, 2);
 }
 
 module.exports = new Adaptor(inputAdaptor);

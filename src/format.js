@@ -213,5 +213,4 @@ module.exports = {
   formatTxHexAddress,
   deepFormatAddress: (obj, networkId) => deepFormatAnyAddress(obj, networkId),
   deepFormatHexAddress: obj => deepFormatAnyAddress(obj, 0, true),
-  replaceEthKeywords
 };

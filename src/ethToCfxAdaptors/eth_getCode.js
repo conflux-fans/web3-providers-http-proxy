@@ -17,15 +17,15 @@ const util = require('../util');
  */
 
 async function inputAdaptor(params) {
-    params[0] = format.formatAddress(params[0], cfx.networkId); // TODO: where does the networkId come from
-    format.formatEpochOfParams(params, 1);
+  params[0] = format.formatAddress(params[0], this.cfx.networkId);
+  format.formatEpochOfParams(params, 1);
 }
 
 async function outputAdaptor(response) {
-    if (response && response.error && response.error.code == -32016) {
-        response.error = null;
-        response.result = "0x";
-    }
+  if (response && response.error && response.error.code == -32016) {
+    response.error = null;
+    response.result = "0x";
+  }
 }
 
 module.exports = new Adaptor(inputAdaptor, outputAdaptor);

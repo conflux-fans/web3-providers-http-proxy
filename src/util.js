@@ -10,6 +10,15 @@ function delKeys(object, keys) {
   }
 }
 
+function buildJsonRpcRequest(method, ...params) {
+  return {
+    "jsonrpc": "2.0",
+    "id": Date.now().toString(),
+    method,
+    params,
+  }
+}
+
 module.exports = {
   emptyFn: origin => origin,
 
@@ -19,5 +28,7 @@ module.exports = {
 
   setNull,
   
-  delKeys
+  delKeys,
+
+  buildJsonRpcRequest
 };

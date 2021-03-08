@@ -23,7 +23,7 @@ const util = require('../util');
  */
 
 async function inputAdaptor(params) {
-    format.formatCommonInput(params, this.cfx.networkId);
+  format.formatCommonInput(params, this.cfx.networkId);
 }
 
 module.exports = new Adaptor(inputAdaptor);

@@ -12,13 +12,12 @@ const format = require('../format');
  */
 
 async function inputAdaptor(params) {
-    format.formatEpochOfParams(params, 0);
+  format.formatEpochOfParams(params, 0);
 }
 
 async function outputAdaptor(response) {
-    if (response && response.result) {
-        format.formatBlock(response.result);
-    }
+  if (!response || !response.result) return;
+  format.formatBlock(response.result);
 }
 
 module.exports = new Adaptor(inputAdaptor, outputAdaptor);

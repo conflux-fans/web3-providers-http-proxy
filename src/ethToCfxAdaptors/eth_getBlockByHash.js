@@ -32,9 +32,8 @@ transactions: Array - Array of transaction objects, or 32 Bytes transaction hash
 uncles: Array - Array of uncle hashes.
  */
 async function outputAdaptor(response) {
-    if (response && response.result) {
-        format.formatBlock(response.result);
-    }
+  if (!response || !response.result) return;
+  format.formatBlock(response.result);
 }
 
 module.exports = new Adaptor(util.asyncEmptyFn, outputAdaptor);

@@ -18,9 +18,8 @@ const util = require('../util');
  * 
  */
 async function outputAdaptor(response) {
-    if (response && response.result) {
-        response.result = response.result.map(format.formatHexAddress);
-    }
+  if (!response || !response.result) return;
+  response.result = response.result.map(format.formatHexAddress);
 }
 
 module.exports = new Adaptor(util.asyncEmptyFn, outputAdaptor);

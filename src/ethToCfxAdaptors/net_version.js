@@ -12,10 +12,8 @@ const util = require('../util');
  * 
  */
 async function outputAdaptor(response) {
-    if (response && response.result && response.result.networkId) {
-        response.result = Number.parseInt(response.result.networkId);
-    }
-    return response;
+  if (!response || !response.result) return;
+  response.result = response.result.networkId;
 }
 
 module.exports = new Adaptor(util.asyncEmptyFn, outputAdaptor);

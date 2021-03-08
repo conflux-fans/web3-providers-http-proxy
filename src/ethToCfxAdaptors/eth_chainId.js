@@ -16,10 +16,8 @@ const util = require('../util');
 }
  */
 async function outputAdaptor(response) {
-    if (response && response.result && response.result.chainId) {
-        response.result = response.result.chainId;
-    }
-    return response;
+  if (!response || !response.result) return;
+  response.result = response.result.chainId;
 }
 
 module.exports = new Adaptor(util.asyncEmptyFn, outputAdaptor);

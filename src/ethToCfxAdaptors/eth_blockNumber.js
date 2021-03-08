@@ -15,7 +15,7 @@ const format = require('../format');
  }
  */
 async function inputAdaptor(params) {
-    format.formatEpochOfParams(params, 0);
+  format.formatEpochOfParams(params, 0);
 }
 
 module.exports = new Adaptor(inputAdaptor);

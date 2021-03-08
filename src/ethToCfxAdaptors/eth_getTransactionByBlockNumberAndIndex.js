@@ -1,27 +1,23 @@
 const Adaptor = require('../JsonRPCAdaptor');
-const format = require('../format');
 
 /**
- * eth method: 
- * cfx method:
+ * eth method: eth_getTransactionByBlockNumberAndIndex
+ * cfx method: cfx_getBlockByEpochNumber
  * 
  * inputs example:
  * 
  * outputs example:
- {
-  "id":1,
-  "jsonrpc": "2.0",
-  "result": "0x5208" // 21000
-}
  */
-
 async function inputAdaptor(params) {
-  format.formatCommonInput(params, this.cfx.networkId);
+  this.txIndex = params[1];
+  params[1] = true;
 }
 
 async function outputAdaptor(response) {
   if (!response || !response.result) return;
-  response.result = response.result.gasUsed;
+  let index = Number(this.txIndex);
+  response.result = response.result.transactions[index];
 }
 
 module.exports = new Adaptor(inputAdaptor, outputAdaptor);
+

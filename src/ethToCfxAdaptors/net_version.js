@@ -1,5 +1,4 @@
 const Adaptor = require('../JsonRPCAdaptor');
-const format = require('../format');
 const util = require('../util');
 
 /**

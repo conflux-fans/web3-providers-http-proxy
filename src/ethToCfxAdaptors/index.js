@@ -19,4 +19,8 @@ module.exports = {
     eth_sign: require('./eth_sign'),
     net_version: require('./net_version'),
     web3_clientVersion: require('./web3_clientVersion'),
+    eth_getBlockTransactionCountByHash: require('./eth_getBlockTransactionCountByHash'),
+    eth_getBlockTransactionCountByNumber: require('./eth_getBlockTransactionCountByNumber'),
+    eth_getTransactionByBlockHashAndIndex: require('./eth_getTransactionByBlockHashAndIndex'),
+    eth_getTransactionByBlockNumberAndIndex: require('./eth_getTransactionByBlockNumberAndIndex'),
 };

@@ -1,6 +1,4 @@
 const Adaptor = require('../JsonRPCAdaptor');
-const format = require('../format');
-const util = require('../util');
 
 /**
  * eth method: eth_sign

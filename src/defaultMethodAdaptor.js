@@ -18,13 +18,13 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   net_version: 'cfx_getStatus',
   eth_getTransactionReceipt: 'cfx_getTransactionReceipt',
   eth_getLogs: 'cfx_getLogs',
-  eth_sign: 'sign',
   eth_getBlockTransactionCountByHash: 'cfx_getBlockByHash',
   eth_getBlockTransactionCountByNumber: 'cfx_getBlockByEpochNumber',
-  eth_signTransaction: 'cfx_signTransaction',
   eth_getTransactionByBlockHashAndIndex: 'cfx_getBlockByHash',
   eth_getTransactionByBlockNumberAndIndex: 'cfx_getBlockByEpochNumber',
-  eth_coinbase: 'cfx_epochNumber'
+  eth_coinbase: 'cfx_epochNumber',
+  eth_sign: 'sign',
+  eth_signTransaction: 'cfx_signTransaction',
 };
 
 module.exports = function (method) {

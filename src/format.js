@@ -48,9 +48,9 @@ function formatBlock(block) {
   block.receiptsRoot = block.deferredReceiptsRoot;
   // totalDifficulty?
   // extraData?
-  // gasUsed?
   block.uncles = block.refereeHashes; // check?
   block.miner = format.hexAddress(block.miner);
+  block.totalDifficulty = block.difficulty;
   // format tx object
   if (
     block.tranactions &&
@@ -70,35 +70,40 @@ function formatBlock(block) {
     "epochNumber",
     "height",
     "powQuality",
-    "refereeHashes"
+    "refereeHashes",
+    "custom"
   ]);
   setNull(block, [
     "extraData",
-    "gasUsed",
     "logsBloom",
     "mixHash",
     "sha3Uncles",
-    "totalDifficulty"
   ]);
   return block;
 }
 
 function formatTransaction(tx) {
-  // blockNumber?   TODO maybe cause big problem
+  // blockNumber?  need set blockNumber
   tx.input = tx.data;
   tx.from = format.hexAddress(tx.from);
   tx.to = format.hexAddress(tx.to);
 
   delKeys(tx, [
-    "chainId",
-    "contractCreated",
     "data",
-    "epochHeight",
-    "status",
-    "storageLimit"
+    "status"
   ]);
   setNull(tx, ["blockNumber"]);
   return tx;
+}
+
+function formatLog(l) {
+  l.address = format.hexAddress(l.address);
+  l.logIndex = l.transactionLogIndex;
+  l.blockNumber = l.epochNumber;
+  delKeys(l, [
+    'transactionLogIndex',
+    'epochNumber'
+  ]);
 }
 
 async function formatTxParams(cfx, options) {
@@ -213,4 +218,5 @@ module.exports = {
   formatTxHexAddress,
   deepFormatAddress: (obj, networkId) => deepFormatAnyAddress(obj, networkId),
   deepFormatHexAddress: obj => deepFormatAnyAddress(obj, 0, true),
+  formatLog,
 };

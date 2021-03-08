@@ -24,6 +24,7 @@ const util = require('../util');
 
 async function inputAdaptor(params) {
   format.formatCommonInput(params, this.cfx.networkId);
+  // conflux has an optional `nonce` parameter
 }
 
 module.exports = new Adaptor(inputAdaptor);

@@ -18,6 +18,18 @@ const provider = new HttpProvider('http://localhost:12537', {
 web3.setProvider(provider);
 ```
 
+```html
+<script src="./web3-providers-http-proxy/dist/web3-provider-proxy.min.js"></script>
+<script>
+const URL = 'https://testnet-rpc.conflux-chain.org.cn/v2';
+const provider = new HttpProvider(URL, {
+  chainAdaptor: ethToConflux,
+  networkId: 1,
+});
+web3.setProvider(provider);
+</script>
+```
+
 ## ETH-to-CFX what has been bridged
 
 ### Tags

@@ -25,7 +25,7 @@ web3.setProvider(provider);
 * latest -> latest_state
 
 ### Address
-1. From address's first letter change to 1
+1. address's first letter change to `1`
 2. hex to base32
 
 ### RPC methods

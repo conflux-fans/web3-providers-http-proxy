@@ -1,48 +1,3 @@
-# web3-provider-proxy
-An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).
-
-
-## how to use
-
-Install through npm
-```sh
-$ npm install web3-providers-http-proxy
-```
-Initiate and set to web3 or contract object.
-
-```js
-const {HttpProvider, ethToConflux} = require('web3-providers-http-proxy');
-const provider = new HttpProvider('http://localhost:12537', {
-    chainAdaptor: ethToConflux
-});
-web3.setProvider(provider);
-```
-
-```html
-<script src="./web3-providers-http-proxy/dist/web3-provider-proxy.min.js"></script>
-<script>
-const URL = 'https://testnet-rpc.conflux-chain.org.cn/v2';
-const provider = new HttpProvider(URL, {
-  chainAdaptor: ethToConflux,
-  networkId: 1,
-});
-web3.setProvider(provider);
-</script>
-```
-
-## ETH-to-CFX what has been bridged
-
-### Tags
-* earliest -> earliest
-* latest -> latest_state
-
-### Address
-1. address's first letter change to `1`
-2. hex to base32
-
-### RPC methods
-
-```js
 const ETH_TO_CFX_METHOD_MAPPER = {
   eth_blockNumber: 'cfx_epochNumber',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',
@@ -71,10 +26,7 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   eth_sign: 'sign',
   eth_signTransaction: 'cfx_signTransaction',
 };
-```
 
-
-### Docs
-
-1. [Conflux RPC doc](https://developer.conflux-chain.org/docs/conflux-doc/docs/json_rpc)
-2. [Ethereum RPC doc](https://eth.wiki/json-rpc/API)
+module.exports = function (method) {
+  return ETH_TO_CFX_METHOD_MAPPER[method] || method;
+}

@@ -1,20 +1,48 @@
 {
   "name": "web3-providers-http-proxy",
-  "version": "0.0.2",
-  "description": "",
+  "version": "0.1.0",
+  "description": "An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).",
   "main": "./src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha",
+    "build": "node build-frontend.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "debug": "^4.1.1",
+    "js-conflux-sdk": "^1.5.11",
+    "lodash": "^4.17.21",
     "web3-core-helpers": "^1.2.9",
     "web3-providers-http": "^1.2.9",
     "xhr2-cookies": "^1.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/plugin-transform-runtime": "^7.13.10",
+    "@babel/preset-env": "^7.13.10",
+    "babel-plugin-lodash": "^3.3.4",
+    "babelify": "^10.0.0",
+    "browserify": "^17.0.0",
+    "chai": "^4.3.3",
+    "exorcist": "^2.0.0",
+    "fs-extra": "^9.1.0",
+    "jsbi": "^3.1.4",
+    "minify-stream": "^2.1.0",
+    "mocha": "^8.3.0",
+    "mold-source-map": "^0.4.0",
     "web3": "^1.2.9"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/conflux-fans/web3-provider-proxy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/conflux-fans/web3-provider-proxy/issues"
+  },
+  "homepage": "https://github.com/conflux-fans/web3-provider-proxy#readme"
 }

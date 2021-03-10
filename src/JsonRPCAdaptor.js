@@ -9,7 +9,7 @@ class JsonRPCAdapter {
   }
 
   async adaptInput(payload) {
-    payload.method = this.methodAdaptor(payload.method);
+    payload.method = this.methodAdaptor(payload.method, payload.params);
     await this.inputAdaptor(payload.params);
   }
 

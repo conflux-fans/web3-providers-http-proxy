@@ -7,6 +7,9 @@ const URL = 'https://testnet-rpc.conflux-chain.org.cn/v2';
 const provider = new HttpProvider(URL, {
   chainAdaptor: ethToConflux,
   networkId: 1,
+  privateKeys: [
+    '0x3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580',
+  ]
 });
 const promsieWrapSend = util.promisify(provider.send).bind(provider);
 const testAddress = 'cfxtest:aak2rra2njvd77ezwjvx04kkds9fzagfe6d5r8e957';

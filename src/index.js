@@ -50,7 +50,6 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
       debug(`Proxy ${originMethod} to ${payload.method}`);
       debug(`Proxy params: ${JSON.stringify(payload, null, '\t')}`);
       super.send(payload, (err, response) => {
-        console.log(err, response);
         err ? reject(err) : resolve(response)
       });
     });

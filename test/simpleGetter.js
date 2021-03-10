@@ -50,5 +50,12 @@ describe('Simple getter', function() {
       isHex(result);
     });
   });
+
+  describe('getAccounts', function() {
+    it('should return address array', async function() {
+      let {result} = await send('eth_accounts');
+      console.log("getAccounts result: ", result);
+    });
+  });
 });
 

@@ -159,10 +159,6 @@ async function formatTxParams(cfx, options) {
     options.chainId = status.chainId;
   }
 
-  const hasAccount = !cfx.getAccount(options.from);
-  if (hasAccount) {
-    options = format.callTxAdvance(cfx.networkId)(options);
-  }
   return options;
 }
 

@@ -16,6 +16,10 @@ const format = require('../format');
  */
 async function inputAdaptor(params) {
   format.formatEpochOfParams(params, 0);
+  // set default parameter
+  if(params.length === 0) {
+    params[0] = 'latest_state';
+  }
 }
 
 module.exports = new Adaptor(inputAdaptor);

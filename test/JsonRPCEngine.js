@@ -8,6 +8,7 @@ const { Conflux } = require('js-conflux-sdk');
 
 const { HttpProvider, ethToConflux, util: {buildJsonRpcRequest}} = require('../src');
 const createProxyMiddleware = require('../src/jsonRpcEngine/inputAdaptor');
+const createSendMiddleware = require('../src/jsonRpcEngine/send');
 //const ProxyMiddleware = require('../src/proxy');
 
 const URL = 'https://testnet-rpc.conflux-chain.org.cn/v2';
@@ -32,15 +33,15 @@ async function testEngine() {
         params: [ 'cfxtest:aanu79h2zdyhamsfc5jaea5r0b2pdh5jky362gbbhn' ]
     }
     let res = await axios.post(URL, payload);
-    console.log(res.data);
-    return;
+    console.log(res.data); 
     */
+
     engine.push(createProxyMiddleware(provider, URL));
-    
+    engine.push(createSendMiddleware(URL));
     let payload_0 = buildJsonRpcRequest('eth_getBalance', address0_Hex);
     let res_0 = await pify(engine.handle).call(engine, payload_0);
     console.log(res_0);
-    return;
+    //return;
     let data = {
         from: '0x13d2ba4ed43542e7c54fbb6c5fccb9f269c1f94c',
         to: '0x1386b4185a223ef49592233b69291bbe5a80c527',
@@ -49,6 +50,10 @@ async function testEngine() {
     let payload_1 = buildJsonRpcRequest('eth_estimateGas', data);
     let res_1 = await pify(engine.handle).call(engine, payload_1);
     console.log(res_1);
+
+    let payload_2 = buildJsonRpcRequest('net_version');
+    let res_2 = await pify(engine.handle).call(engine, payload_2);
+    console.log(res_2);
 }
 
 testEngine();

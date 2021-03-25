@@ -1,17 +1,15 @@
 const { JsonRpcEngine }= require('json-rpc-engine');
 const { util } = require('../src/');
 const pify = require('pify');
-const axios = require('axios');
 
 const engine = new JsonRpcEngine();
-const { Conflux } = require('js-conflux-sdk');
 
 const { HttpProvider, ethToConflux, util: {buildJsonRpcRequest}} = require('../src');
-const createProxyMiddleware = require('../src/jsonRpcEngine/inputAdaptor');
+const createProxyMiddleware = require('../src/jsonRpcEngine/Adaptor');
 const createSendMiddleware = require('../src/jsonRpcEngine/send');
-//const ProxyMiddleware = require('../src/proxy');
 
 const URL = 'https://testnet-rpc.conflux-chain.org.cn/v2';
+const wsURL = 'ws://testnet-rpc.conflux-chain.org.cn/ws/v2';
 
 const provider = new HttpProvider(URL, {
     chainAdaptor: ethToConflux,
@@ -36,8 +34,8 @@ async function testEngine() {
     console.log(res.data); 
     */
 
-    engine.push(createProxyMiddleware(provider, URL));
-    engine.push(createSendMiddleware(URL));
+    engine.push(createProxyMiddleware(wsURL, 1));
+    engine.push(createSendMiddleware(wsURL));
     let payload_0 = buildJsonRpcRequest('eth_getBalance', address0_Hex);
     let res_0 = await pify(engine.handle).call(engine, payload_0);
     console.log(res_0);

@@ -3,6 +3,8 @@ const Web3HttpProvider = require("web3-providers-http");
 const { ethToConflux, defaultAdaptor } = require("./ethToConflux");
 const format = require("./format");
 const { Conflux } = require('js-conflux-sdk');
+const { JsonRpcEngine } = require('json-rpc-engine');
+
 
 class Web3HttpProviderProxy extends Web3HttpProvider {
   constructor(host, options) {
@@ -31,6 +33,7 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
     this.cfx = cfx;
   }
 
+  /*
   send(payload, callback) {
     let originMethod = payload.method;
     let adaptor = ethToConflux[originMethod] || defaultAdaptor;
@@ -61,6 +64,10 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
       .then(adaptor.adaptOutput.bind(adaptor))
       .then(response => callback(null, response))
       .catch(err => callback(err));
+  }
+  */
+  send(payload, callback) {
+
   }
 }
 

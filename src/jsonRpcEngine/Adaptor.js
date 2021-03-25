@@ -1,25 +1,20 @@
-const { createAsyncMiddleware, createScaffoldMiddleware, JsonRpcEngine }= require('json-rpc-engine');
+const { createAsyncMiddleware, createScaffoldMiddleware }= require('json-rpc-engine');
 const defaultMethodAdaptor = require('../defaultMethodAdaptor');
 const format = require('../format');
-const axios = require('axios');
 const _ = require('lodash');
 const util = require('../util');
+const { Conflux, Transaction } = require('js-conflux-sdk');
 
-class ProxyMiddleware {
-    constructor(provider, url) {
-        this.provider = provider;
-        this.url = url;
-        this.cfx = provider.cfx;
-        this.networkId = this.cfx.networkId;
+
+class Proxy {
+    constructor(url, networkId) {
+        this.cfx = new Conflux({url: url});
+        this.networkId = networkId;
     }
 }
 
-function createProxyMiddleware(provider, url) {
-    const proxy = new ProxyMiddleware(provider, url);
-    const subengine = new JsonRpcEngine();
-    //subengine.push(adaptInput);
-    //subengine.push(sendReq);
-    //subengine.push(estimateGas);
+function createProxyMiddleware(url, networkId) {
+    const proxy = new Proxy(url, networkId);
     
     return createScaffoldMiddleware({
         'eth_accounts': createAsyncMiddleware(getAccounts),
@@ -239,42 +234,20 @@ function createProxyMiddleware(provider, url) {
         req.params[0] = format.formatAddress(req.params[0], proxy.networkId);
         format.formatEpochOfParams(req.params, 1);
         await next();
-        //let tmp = await axios.post(proxy.url, req);
-        //res.result = tmp.data.result;
     }
 
     async function estimateGas(req, res, next, end) {
         req.method = defaultMethodAdaptor(req.method, req.params);
         req.params = format.formatCommonInput(req.params, proxy.networkId);
-        //let tmp = await axios.post(proxy.url, req);
-        //if(!tmp.data || !tmp.data.result) return;
         await next();
-        //res.result = tmp.data.result.gasUsed;
         if(!res || !res.result) return;
         res.result = res.result.gasUsed;
     }
 
     function methodAdaptor(method, params) {
         let hexAddress = format.formatHexAddress(params[0].from);
-        let address = format.formatAddress(hexAddress, proxy.cfx.networkId);
+        let address = format.formatAddress(hexAddress, proxy.networkId);
         return proxy.cfx.wallet.has(address) ? 'cfx_sendRawTransaction' : method;
-    }
-
-    //sub engine for estimateGas 
-    async function adaptInput(req, res, next, end) {
-        console.log('adapt in subengine');
-        req.method = defaultMethodAdaptor(req.method, req.params);
-        req.params = format.formatCommonInput(req.params, proxy.networkId);
-        console.log(req);
-        await next();
-        //if(!res || !res.result) return;
-        res.result = res.result.gasUsed;
-    }  
-
-    async function sendReq(req, res, next, end) {
-        console.log('send in subengine');
-        let tmp = await axios.post(proxy.url, req);
-        res.result = tmp.data.result;
     }
 }
 

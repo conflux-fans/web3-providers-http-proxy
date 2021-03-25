@@ -5,7 +5,6 @@ const format = require("./format");
 const { Conflux } = require('js-conflux-sdk');
 const { JsonRpcEngine } = require('json-rpc-engine');
 
-
 class Web3HttpProviderProxy extends Web3HttpProvider {
   constructor(host, options) {
     super(host, options);

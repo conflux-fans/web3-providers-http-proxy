@@ -13,7 +13,7 @@ class Proxy {
     }
 }
 
-function createProxyMiddleware(url, networkId) {
+function createAdaptorMiddleware(url, networkId) {
     const proxy = new Proxy(url, networkId);
     
     return createScaffoldMiddleware({
@@ -37,7 +37,18 @@ function createProxyMiddleware(url, networkId) {
         'eth_getTransactionReceipt': createAsyncMiddleware(getTransactionReceipt),
         'eth_sendTransaction': createAsyncMiddleware(sendTransaction),
         'net_version': createAsyncMiddleware(getNetVersion),
+        'eth_sendRawTransaction' : createAsyncMiddleware(adaptMethod),
+        'eth_gasPrice': createAsyncMiddleware(adaptMethod),
+        'web3_clientVersion': createAsyncMiddleware(adaptMethod),
+        'eth_coinbase' : createAsyncMiddleware(adaptMethod),
+        'eth_sign': createAsyncMiddleware(adaptMethod),
+        'eth_signTransaction': createAsyncMiddleware(adaptMethod),
     });
+
+    async function adaptMethod(req, res, next) {
+        req.method = defaultMethodAdaptor(req.method, req.params);
+        await next();
+    }
 
     async function getAccounts(req, res, next) {
         req.method = defaultMethodAdaptor(req.method, req.params);
@@ -251,4 +262,4 @@ function createProxyMiddleware(url, networkId) {
     }
 }
 
-module.exports = createProxyMiddleware;
+module.exports = createAdaptorMiddleware;

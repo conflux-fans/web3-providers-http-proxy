@@ -37,6 +37,7 @@ function createAdaptorMiddleware(url, networkId) {
         'eth_getTransactionReceipt': createAsyncMiddleware(getTransactionReceipt),
         'eth_sendTransaction': createAsyncMiddleware(sendTransaction),
         'net_version': createAsyncMiddleware(getNetVersion),
+        //eth_ => cfx_ 
         'eth_sendRawTransaction' : createAsyncMiddleware(adaptMethod),
         'eth_gasPrice': createAsyncMiddleware(adaptMethod),
         'web3_clientVersion': createAsyncMiddleware(adaptMethod),
@@ -177,7 +178,7 @@ function createAdaptorMiddleware(url, networkId) {
         if(!res || !res.result) return;
         format.formatTransaction(res.result);
         const block = await proxy.cfx.getBlockByHash(res.result.blockHash);
-        response.result.blockNumber = util.numToHex(block.epochNumber);
+        res.result.blockNumber = util.numToHex(block.epochNumber);
     }
 
     async function getTransactionCount(req, res, next) {

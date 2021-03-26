@@ -2,7 +2,7 @@ const { JsonRpcEngine } = require("json-rpc-engine");
 const createAdaptorMiddleware = require('./Adaptor');
 const createSendMiddleware = require('./send'); 
 
-class Proxy {
+class JsonRpcProxy {
     constructor(url, networkId) {
         this.url = url;
         this.networkId = networkId;
@@ -21,4 +21,4 @@ class Proxy {
     }
 }
 
-module.exports = Proxy;
+module.exports = JsonRpcProxy;

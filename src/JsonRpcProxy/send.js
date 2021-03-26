@@ -1,10 +1,9 @@
 const { createAsyncMiddleware } = require('json-rpc-engine');
-const { Conflux } = require('js-conflux-sdk');
+const { providerFactory } = require('js-conflux-sdk');
 
 class Agent {
     constructor(url) {
-        this.cfx = new Conflux({url: url});
-        this.provider = this.cfx.provider;
+        this.provider = providerFactory({ url: url });
     }
 }
 

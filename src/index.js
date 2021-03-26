@@ -1,6 +1,7 @@
 const debug = require("debug")("provider-proxy");
 const Web3HttpProvider = require("web3-providers-http");
 const { ethToConflux, defaultAdaptor } = require("./ethToConflux");
+const { JsonRpcProxy } = require('./JsonRpcProxy');
 const format = require("./format");
 const { Conflux } = require('js-conflux-sdk');
 
@@ -69,4 +70,5 @@ module.exports = {
   ethToConflux,
   format,
   util: require('./util'),
+  JsonRpcProxy,
 };

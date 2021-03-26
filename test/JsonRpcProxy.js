@@ -1,4 +1,4 @@
-const { JsonRpcProxy } = require('../src/JsonRpcProxy');
+const { JsonRpcProxy } = require('../src');
 const { hexTestAddress, isHex, isHexOrNull } = require('./index');
 const assert = require('chai').assert;
 const expect = require('chai').expect;
@@ -6,8 +6,8 @@ const { util: {buildJsonRpcRequest}} = require('../src');
 const { util } = require('../src/');
 
 const wssURL = 'ws://testnet-rpc.conflux-chain.org.cn/ws/v2';
-const httpURL = '';
-const proxy = new JsonRpcProxy(wssURL, 1);
+const httpURL = 'https://testnet-rpc.conflux-chain.org.cn/v2';
+const proxy = new JsonRpcProxy(httpURL, 1);
 
 const txHash = '0x439b6df80114519fd0f201b2da788b07cd8b598a3b38242b0c9e277bd7c99c44';
 

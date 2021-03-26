@@ -30,6 +30,19 @@ web3.setProvider(provider);
 </script>
 ```
 
+#### JsonRpcProxy
+
+* support **websocket** and **http** url 
+
+```js
+const { JsonRpcProxy } = require('web3-provider-http-proxy');
+const URL = 'ws://testnet-rpc.conflux-chain.org.cn/ws/v2';
+// Conflux testnet networkId is 1
+const proxy = new JsonRpcProxy(URL, 1);
+```
+
+See tests for usage details.
+
 ## ETH-to-CFX what has been bridged
 
 ### Tags

@@ -4,6 +4,7 @@ const format = require('../format');
 const _ = require('lodash');
 const util = require('../util');
 const { Conflux, Transaction } = require('js-conflux-sdk');
+const { stat } = require('fs-extra');
 
 
 class Proxy {
@@ -230,6 +231,17 @@ function createAdaptorMiddleware(url, networkId) {
         req.params[0] = await format.formatTxParams(proxy.cfx, req.params[0]);
         if (proxy.cfx.wallet.has(req.params[0].from)) {
             let tx = new Transaction(req.params[0]);
+            tx.nonce = await proxy.cfx.getNextNonce(req.params[0].from);
+
+            let status = await proxy.cfx.getStatus();
+            let estimateValues = await proxy.cfx.estimateGasAndCollateral(tx);
+            let gasPrice = await proxy.cfx.getGasPrice();
+
+            tx.chainId = status.chainId;
+            tx.gas = Number(estimateValues.gasLimit);
+            tx.gasPrice = Number(gasPrice);
+            tx.storageLimit = Number(estimateValues.storageCollateralized);
+            
             let account = proxy.cfx.wallet.get(req.params[0].from);
             tx.sign(account.privateKey, proxy.networkId);
             req.params[0] = tx.serialize();

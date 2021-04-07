@@ -13,6 +13,7 @@
   "dependencies": {
     "debug": "^4.1.1",
     "js-conflux-sdk": "^1.5.11",
+    "json-rpc-engine": "^6.1.0",
     "lodash": "^4.17.21",
     "web3-core-helpers": "^1.2.9",
     "web3-providers-http": "^1.2.9",

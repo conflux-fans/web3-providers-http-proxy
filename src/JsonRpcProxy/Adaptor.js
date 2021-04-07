@@ -8,7 +8,10 @@ const { Conflux, Transaction } = require('js-conflux-sdk');
 
 class Proxy {
     constructor(url, networkId) {
-        this.cfx = new Conflux({url: url});
+        this.cfx = new Conflux({
+            url: url,
+            networkId: networkId,
+        });
         this.networkId = networkId;
     }
 }
@@ -222,7 +225,7 @@ function createAdaptorMiddleware(url, networkId) {
     }
 
     async function sendTransaction(req, res, next) {
-        req.method = methodAdaptor(req.method, req.params);
+        req.method = sendTxMethodAdaptor(req.method, req.params);
         if (params.length === 0) throw new Error('The first parameter should be an transaction');
         req.params[0] = await format.formatTxParams(proxy.cfx, req.params[0]);
         if (proxy.cfx.wallet.has(req.params[0].from)) {
@@ -256,7 +259,7 @@ function createAdaptorMiddleware(url, networkId) {
         res.result = res.result.gasUsed;
     }
 
-    function methodAdaptor(method, params) {
+    function sendTxMethodAdaptor(method, params) {
         let hexAddress = format.formatHexAddress(params[0].from);
         let address = format.formatAddress(hexAddress, proxy.networkId);
         return proxy.cfx.wallet.has(address) ? 'cfx_sendRawTransaction' : method;

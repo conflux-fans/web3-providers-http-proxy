@@ -1,3 +1,6 @@
+const RLP = require('rlp');
+const {format} = require('js-conflux-sdk');
+
 function setNull(object, keys) {
   for (let key of keys) {
     object[key] = null;
@@ -19,6 +22,21 @@ function buildJsonRpcRequest(method, ...params) {
   }
 }
 
+function decodeEthRawTx(tx) {
+  let [nonce, gasPrice, gas, to, value, data, v, r, s] = RLP.decode(tx);
+  return {
+    nonce: format.hex(nonce),
+    gasPrice: format.hex(gasPrice),
+    gas: format.hex(gas),
+    to: format.hex(to),
+    value: format.hex(value),
+    data: format.hex(data),
+    v: format.uInt(v), 
+    r: format.hex(r),
+    s: format.hex(s),
+  };
+}
+
 module.exports = {
   emptyFn: origin => origin,
 
@@ -30,5 +48,9 @@ module.exports = {
   
   delKeys,
 
-  buildJsonRpcRequest
+  buildJsonRpcRequest,
+
+  decodeEthRawTx,
+
+  MAX_UINT64: '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
 };

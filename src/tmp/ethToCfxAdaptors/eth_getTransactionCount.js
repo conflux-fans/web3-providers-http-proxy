@@ -1,5 +1,5 @@
 const Adaptor = require('../JsonRPCAdaptor');
-const format = require('../format');
+const format = require('../../format');
 
 /**
  * eth method: eth_getTransactionCount

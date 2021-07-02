@@ -1,8 +1,8 @@
 const { createAsyncMiddleware, createScaffoldMiddleware }= require('json-rpc-engine');
-const defaultMethodAdaptor = require('../defaultMethodAdaptor');
-const format = require('../format');
+const defaultMethodAdaptor = require('./defaultMethodAdaptor');
+const format = require('./format');
 const _ = require('lodash');
-const util = require('../util');
+const util = require('./util');
 const { Conflux, Transaction } = require('js-conflux-sdk');
 const { stat } = require('fs-extra');
 
@@ -42,7 +42,7 @@ function createAdaptorMiddleware(url, networkId) {
         'eth_sendTransaction': createAsyncMiddleware(sendTransaction),
         'net_version': createAsyncMiddleware(getNetVersion),
         //eth_ => cfx_ 
-        'eth_sendRawTransaction' : createAsyncMiddleware(adaptMethod),
+        'eth_sendRawTransaction' : createAsyncMiddleware(sendRawTransaction),
         'eth_gasPrice': createAsyncMiddleware(adaptMethod),
         'web3_clientVersion': createAsyncMiddleware(adaptMethod),
         'eth_coinbase' : createAsyncMiddleware(adaptMethod),
@@ -52,6 +52,18 @@ function createAdaptorMiddleware(url, networkId) {
 
     async function adaptMethod(req, res, next) {
         req.method = defaultMethodAdaptor(req.method, req.params);
+        await next();
+    }
+
+    async function sendRawTransaction(req, res, next) {
+        req.method = defaultMethodAdaptor(req.method, req.params);
+        // decode tx
+        let txInfo = util.decodeEthRawTx(req.params[0]);
+        // TODO check to is an valid conflux address
+        txInfo.epochHeight = util.MAX_UINT64;
+        txInfo.storageLimit = util.MAX_UINT64;
+        let cfxTx = new Transaction(txInfo);
+        req.params[0] = cfxTx.serialize();
         await next();
     }
 

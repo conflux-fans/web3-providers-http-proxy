@@ -1,5 +1,5 @@
 const { createAsyncMiddleware, createScaffoldMiddleware } = require('json-rpc-engine');
-const defaultMethodAdaptor = require('../utils/eth2CfxMethodMapper');
+const defaultMethodAdaptor = require('../utils/mapETHMethod');
 const format = require('../utils/format');
 const _ = require('lodash');
 const util = require('../utils');
@@ -122,9 +122,12 @@ function cfx2Eth(url, networkId) {
     req.params[0] = format.formatAddress(req.params[0], networkId);
     format.formatEpochOfParams(req.params, 1);
     await next();
-    if (res && res.error && res.error.code == -32016) {
-      res.error = null;
-      res.result = "0x";
+    if (res && res.error) {
+      const {code, message} = res.error;
+      if (code == -32016 || (code === -32602 && message === 'Invalid parameters: address')) {
+        res.error = null;
+        res.result = "0x";
+      }
     }
   }
 
@@ -209,9 +212,10 @@ function cfx2Eth(url, networkId) {
     if (txReceipt.contractCreated) {
       txReceipt.contractCreated = format.formatHexAddress(txReceipt.contractCreated);
     }
-    // TODO gasFee
+    
     txReceipt.from = format.formatHexAddress(txReceipt.from);
     txReceipt.to = format.formatHexAddress(txReceipt.to);
+    txReceipt.gasUsed = txReceipt.gasFee;  // use gasFee as gasUsed
     if (txReceipt.logs) {
       txReceipt.logs.forEach(
         l => (l.address = format.formatHexAddress(l.address))

@@ -5,9 +5,13 @@ function sendMiddleware(url) {
     const provider = providerFactory({ url: url });    
     return createAsyncMiddleware(sendRequest);
     
-    async function sendRequest(req, res) {
+    async function sendRequest(req, res, next) {
         let tmp = await provider.request(req);
-        res.result = tmp.result;
+        if (tmp.result) {
+          res.result = tmp.result;
+        } else {
+          res.error = tmp.error;
+        }
     }
 }
 

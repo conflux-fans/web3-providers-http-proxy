@@ -15,6 +15,13 @@ describe('Simple getter', function() {
     });
   });
 
+  describe('net_version', function() {
+    it('should return hex number', async function() {
+      let {result} = await send('net_version');
+      isHex(result);
+    });
+  });
+
   describe('gasPrice', function() {
     it('should return hex number', async function() {
       let {result} = await send('eth_gasPrice');
@@ -53,8 +60,8 @@ describe('Simple getter', function() {
 
   describe('getAccounts', function() {
     it('should return address array', async function() {
-      let {result} = await send('eth_accounts');
-      console.log("getAccounts result: ", result);
+      let {result, error} = await send('eth_accounts');
+      console.log("getAccounts result: ", result, error);
     });
   });
 });

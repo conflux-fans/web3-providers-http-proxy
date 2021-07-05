@@ -1,24 +1,20 @@
 const { JsonRpcEngine } = require("json-rpc-engine");
-const createAdaptorMiddleware = require('./Adaptor');
-const createSendMiddleware = require('./send'); 
+const cfx2Eth = require('./middlewares/eth2Cfx');
+const sendJSONRPC = require('./middlewares/send');
 
 class JsonRpcProxy {
-    constructor(url, networkId) {
-        this.url = url;
-        this.networkId = networkId;
-        this.engine = new JsonRpcEngine();
-        this.init();
-    }
+  constructor(url, networkId) {
+    this.url = url;
+    this.networkId = networkId;
+    this.engine = new JsonRpcEngine();
+    this.engine.push(cfx2Eth(this.url, this.networkId));
+    this.engine.push(sendJSONRPC(this.url));
+  }
 
-    init() {
-        this.engine.push(createAdaptorMiddleware(this.url, this.networkId));
-        this.engine.push(createSendMiddleware(this.url));
-    }
-
-    async send(req) {
-        let res = await this.engine.handle(req);
-        return res;
-    }
+  async send(req) {
+    const res = await this.engine.handle(req);
+    return res;
+  }
 }
 
 module.exports = JsonRpcProxy;

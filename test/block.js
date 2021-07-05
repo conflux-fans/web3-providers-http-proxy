@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const expect = require('chai').expect;
 const { send, hexTestAddress, isHex, isHexOrNull } = require('./index');
-const { util } = require('../src/');
+const util  = require('../src/utils/');
 
 const keys = [
   'number',

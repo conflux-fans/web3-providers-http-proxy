@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 const { send, hexTestAddress, isHex, isHexOrNull } = require('./index');
-const { util } = require('../src/');
+const util = require('../src/utils/');
 
 describe('call-and-estimate', function() {
   describe('eth_call', function() {

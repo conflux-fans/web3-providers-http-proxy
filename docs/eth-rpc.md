@@ -1,7 +1,6 @@
 
 ### default block parameter 
 The following methods have an extra default block parameter: 
-
 * eth_getBalance
 * eth_getCode
 * eth_getTransactionCount
@@ -9,7 +8,6 @@ The following methods have an extra default block parameter:
 * eth_call
 
 The following options are possible for the defaultBlock parameter:
-
 * HEX String - an integer block number
 * String "earliest" for the earliest/genesis block
 * String "latest" - for the latest mined block
@@ -17,7 +15,6 @@ The following options are possible for the defaultBlock parameter:
 
 ##### Conflux
 When requests are made that act on the state of conflux, the epoch number parameter determines the height of the epoch. The following options are possible for the epoch number parameter:
-
 * HEX String - an integer epoch number
 * String "earliest" for the epoch of the genesis block
 * String "latest_checkpoint" for the earliest epoch stored in memory
@@ -27,10 +24,9 @@ When requests are made that act on the state of conflux, the epoch number parame
 
 Noticed that for performance optimization concern, the lasted mined epochs are not executed, so there is no state available in these epochs. For most of RPCs related to state query, the "latest_state" is recommended.
 
-
 ### RPC method mapping
 
-* eth_protocolVersion
+* eth_protocolVersion  ?
 * eth_gasPrice
 * eth_accounts
 * eth_blockNumber -- epochNumber
@@ -55,19 +51,17 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 * eth_getLogs
 * web3_clientVersion
 * net_version
-
+* web3_sha3  
 
 * eth_getUncleCountByBlockHash  ? 
 * eth_getUncleCountByBlockNumber  ?
 * eth_getUncleByBlockHashAndIndex  ?
 * eth_getUncleByBlockNumberAndIndex  ?
 
-
 * eth_getCompilers  ?
 * eth_compileLLL  ?
 * eth_compileSolidity  ?
 * eth_compileSerpent  ?
-
 
 * eth_newFilter  ?
 * eth_newBlockFilter ?
@@ -76,18 +70,16 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 * eth_getFilterChanges  ?
 * eth_getFilterLogs  ?
 
-
-* eth_syncing
-* eth_coinbase
-* eth_mining
+* eth_syncing ?
+* eth_mining ?
 * eth_hashrate
 * eth_getWork ?
 * eth_submitWork ?
 * eth_submitHashrate ?
 
+* eth_coinbase ?
 
-* web3_sha3
-* net_peerCount
-* net_listening
+* net_peerCount  ?
+* net_listening  ?
 
-db & shh
+* db & shh methods ?

@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 const { send, hexTestAddress, isHex, isHexOrNull } = require('./index');
-const { util } = require('../src/');
+const util = require('../src/utils');
 const txHash = '0x439b6df80114519fd0f201b2da788b07cd8b598a3b38242b0c9e277bd7c99c44';
 
 const keys = [

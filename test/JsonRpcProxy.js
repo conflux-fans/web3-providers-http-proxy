@@ -1,4 +1,4 @@
-const { JsonRpcProxy } = require('../src');
+/* const { JsonRpcProxy } = require('../src');
 const { hexTestAddress, isHex, isHexOrNull } = require('./index');
 const assert = require('chai').assert;
 const expect = require('chai').expect;
@@ -226,4 +226,4 @@ describe('Json Rpc Proxy', function(){
           });
         });
       });  
-});
+}); */

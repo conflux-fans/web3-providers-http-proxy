@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 const { send, hexTestAddress, isHex, isHexOrNull } = require('./index');
-const { util } = require('../src/');
+const util = require('../src/utils');
 
 describe('sendTransaction', function() {
   describe('eth_sendTransaction', function() {

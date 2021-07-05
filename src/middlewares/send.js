@@ -1,7 +1,7 @@
 const { createAsyncMiddleware } = require('json-rpc-engine');
 const { providerFactory } = require('js-conflux-sdk');
 
-function createSendMiddleware(url) {
+function sendMiddleware(url) {
     const provider = providerFactory({ url: url });    
     return createAsyncMiddleware(sendRequest);
     
@@ -11,4 +11,4 @@ function createSendMiddleware(url) {
     }
 }
 
-module.exports = createSendMiddleware;
+module.exports = sendMiddleware;

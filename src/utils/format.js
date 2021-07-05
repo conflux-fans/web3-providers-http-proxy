@@ -1,11 +1,11 @@
 const debug = require("debug")("web3-providers-http-proxy:format");
-const { numToHex, setNull, delKeys } = require("./util");
+const { numToHex, setNull, delKeys } = require("./");
 const { format } = require("js-conflux-sdk");
 
 const EPOCH_MAP = {
   earliest: "earliest",
   latest: "latest_state",
-  pending: "latest_state"
+  pending: "latest_state"  // TODO there is no correct 'pending' tag in conflux
 };
 
 function formatEpoch(tag) {
@@ -48,7 +48,7 @@ function formatBlock(block) {
   block.receiptsRoot = block.deferredReceiptsRoot;
   // totalDifficulty?
   // extraData?
-  block.uncles = block.refereeHashes; // check?
+  block.uncles = []; // No uncles in conflux
   block.miner = format.hexAddress(block.miner);
   block.totalDifficulty = block.difficulty;
   // format tx object

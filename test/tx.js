@@ -1,6 +1,5 @@
 const assert = require('chai').assert;
-const { send, hexTestAddress, isHex, isHexOrNull } = require('./index');
-const util = require('../src/utils');
+const { send } = require('./index');
 const txHash = '0x439b6df80114519fd0f201b2da788b07cd8b598a3b38242b0c9e277bd7c99c44';
 
 const keys = [
@@ -37,6 +36,7 @@ describe('Transaction', function() {
   describe('getTransactionByHash', function() {
     it('should return tx', async function() {
       let {result} = await send('eth_getTransactionByHash', txHash);
+      // console.log('TX: ', result);
       assert.containsAllKeys(result, keys);
     });
   });
@@ -44,6 +44,7 @@ describe('Transaction', function() {
   describe('getTransactionReceipt', function () {
     it('should return receipt', async function() {
       let {result} = await send('eth_getTransactionReceipt', txHash);
+      // console.log('Receipt: ', result);
       assert.containsAllKeys(result, receiptKeys);
     });
   });

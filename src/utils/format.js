@@ -42,15 +42,12 @@ function formatCommonInput(params, networkId, txIndex = 0, epochIndex = 1) {
 
 function formatBlock(block) {
   block.number = block.epochNumber;
-  // sha3Uncles?
-  // logsBloom?
   block.stateRoot = block.deferredStateRoot;
   block.receiptsRoot = block.deferredReceiptsRoot;
-  // totalDifficulty?
-  // extraData?
+  block.logsBloom = block.deferredLogsBloomHash;  // logsBloom?
   block.uncles = []; // No uncles in conflux
   block.miner = format.hexAddress(block.miner);
-  block.totalDifficulty = block.difficulty;
+  block.totalDifficulty = block.difficulty;  // totalDifficulty?
   // format tx object
   if (
     block.tranactions &&
@@ -74,10 +71,9 @@ function formatBlock(block) {
     "custom"
   ]);
   setNull(block, [
-    "extraData",
-    "logsBloom",
+    "extraData",  // extraData?
     "mixHash",
-    "sha3Uncles",
+    "sha3Uncles",  // sha3Uncles?
   ]);
   return block;
 }

@@ -188,8 +188,10 @@ function cfx2Eth(url, networkId) {
     await next();
     if (!res || !res.result) return;
     format.formatTransaction(res.result);
-    const block = await cfx.getBlockByHash(res.result.blockHash);
-    res.result.blockNumber = util.numToHex(block.epochNumber);
+    if (res.result.blockHash) {
+      const block = await cfx.getBlockByHash(res.result.blockHash);
+      res.result.blockNumber = util.numToHex(block.epochNumber);
+    }
   }
 
   async function getTransactionCount(req, res, next) {
@@ -207,6 +209,7 @@ function cfx2Eth(url, networkId) {
     if (txReceipt.contractCreated) {
       txReceipt.contractCreated = format.formatHexAddress(txReceipt.contractCreated);
     }
+    // TODO gasFee
     txReceipt.from = format.formatHexAddress(txReceipt.from);
     txReceipt.to = format.formatHexAddress(txReceipt.to);
     if (txReceipt.logs) {
@@ -227,7 +230,12 @@ function cfx2Eth(url, networkId) {
       "epochNumber",
       "index",
       "outcomeStatus",
-      "stateRoot"
+      "stateRoot",
+      'txExecErrorMsg',
+      'gasCoveredBySponsor',
+      'storageCollateralized',
+      'storageReleased',
+      'storageCoveredBySponsor'
     ]);
     return res;
   }

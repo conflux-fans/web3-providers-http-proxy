@@ -1,6 +1,8 @@
 const assert = require('chai').assert;
 const { send } = require('./index');
 const txHash = '0x439b6df80114519fd0f201b2da788b07cd8b598a3b38242b0c9e277bd7c99c44';
+const blockHash = '';
+const blockNumber = '';
 
 const keys = [
   'blockHash',
@@ -40,6 +42,22 @@ describe('Transaction', function() {
       assert.containsAllKeys(result, keys);
     });
   });
+
+  /* describe('getTransactionByBlockHashAndIndex', function() {
+    it('should return tx', async function() {
+      let {result} = await send('eth_getTransactionByBlockHashAndIndex', blockHash, 0);
+      // console.log('TX: ', result);
+      assert.containsAllKeys(result, keys);
+    });
+  });
+
+  describe('getTransactionByBlockNumberAndIndex', function() {
+    it('should return tx', async function() {
+      let {result} = await send('eth_getTransactionByBlockNumberAndIndex', blockNumber, 0);
+      // console.log('TX: ', result);
+      assert.containsAllKeys(result, keys);
+    });
+  }); */
 
   describe('getTransactionReceipt', function () {
     it('should return receipt', async function() {

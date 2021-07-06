@@ -25,7 +25,7 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   eth_coinbase: null,
   eth_sign: 'sign',
   eth_signTransaction: 'cfx_signTransaction',
-  web3_sha3: 'web3_sha3', // TODO
+  web3_sha3: 'web3_sha3',
 };
 
 module.exports = function (method) {

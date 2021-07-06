@@ -7,13 +7,12 @@ class JsonRpcProxy {
     this.url = url;
     this.networkId = networkId;
     this.engine = new JsonRpcEngine();
-    this.engine.push(cfx2Eth(this.url, this.networkId));
+    this.engine.push(cfx2Eth({url, networkId}));
     this.engine.push(sendJSONRPC(this.url));
   }
 
   async send(req) {
-    const res = await this.engine.handle(req);
-    return res;
+    return await this.engine.handle(req);
   }
 }
 

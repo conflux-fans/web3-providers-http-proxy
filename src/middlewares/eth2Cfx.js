@@ -1,16 +1,14 @@
 const { createAsyncMiddleware, createScaffoldMiddleware } = require('json-rpc-engine');
+const { Conflux, Transaction, sign, format: sdkFormat } = require('js-conflux-sdk');
+const _ = require('lodash');
 const defaultMethodAdaptor = require('../utils/mapETHMethod');
 const format = require('../utils/format');
-const _ = require('lodash');
 const util = require('../utils');
-const { Conflux, Transaction } = require('js-conflux-sdk');
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
 
-function cfx2Eth(url, networkId) {
-  const cfx = new Conflux({
-    url: url,
-    networkId: networkId,
-  });
+function cfx2Eth(options) {
+  const cfx = new Conflux(options);
+  const { networkId } = options;
 
   return createScaffoldMiddleware({
     'eth_accounts': createAsyncMiddleware(getAccounts),
@@ -33,6 +31,7 @@ function cfx2Eth(url, networkId) {
     'eth_getTransactionReceipt': createAsyncMiddleware(getTransactionReceipt),
     'eth_sendTransaction': createAsyncMiddleware(sendTransaction),
     'net_version': createAsyncMiddleware(getNetVersion),
+    'web3_sha3': createAsyncMiddleware(webSha3),
     //eth_ => cfx_ 
     'eth_sendRawTransaction': createAsyncMiddleware(sendRawTransaction),
     'eth_gasPrice': createAsyncMiddleware(adaptMethod),
@@ -168,33 +167,29 @@ function cfx2Eth(url, networkId) {
 
   async function getTransactionByBlockHashAndIndex(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
-    let txIndex = req.params[1];
+    const index = Number(req.params[1]);
     req.params[1] = true;
     await next();
     if (!res || !res.result) return;
-    let index = Number(txIndex);
     res.result = res.result.transactions[index];
+    formatTX(res.result);
   }
 
   async function getTransactionByBlockNumberAndIndex(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
-    let txIndex = req.params[1];
+    const index = Number(req.params[1]);
     req.params[1] = true;
     await next();
     if (!res || !res.result) return;
-    let index = Number(txIndex);
     res.result = res.result.transactions[index];
+    formatTX(res.result);
   }
 
   async function getTransactionByHash(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res || !res.result) return;
-    format.formatTransaction(res.result);
-    if (res.result.blockHash) {
-      const block = await cfx.getBlockByHash(res.result.blockHash);
-      res.result.blockNumber = util.numToHex(block.epochNumber);
-    }
+    await formatTX(res.result);
   }
 
   async function getTransactionCount(req, res, next) {
@@ -279,11 +274,28 @@ function cfx2Eth(url, networkId) {
     await next();
   }
 
+  async function webSha3(req, res, next) {
+    const data = req.params[0];
+    const toSign = Buffer.from(data.slice(2), 'hex');
+    res.result = format.hex(sign.keccak256(toSign));
+  }
+
   function sendTxMethodAdaptor(method, params) {
     let hexAddress = format.formatHexAddress(params[0].from);
     let address = format.formatAddress(hexAddress, networkId);
     return cfx.wallet.has(address) ? 'cfx_sendRawTransaction' : method;
   }
+
+  async function formatTX(tx) {
+    if (!tx) return;
+    format.formatTransaction(tx);
+    if (tx.blockHash) {
+      const block = await cfx.getBlockByHash(tx.blockHash);
+      tx.blockNumber = util.numToHex(block.epochNumber);
+    }
+  }
+
+
 }
 
 module.exports = cfx2Eth;

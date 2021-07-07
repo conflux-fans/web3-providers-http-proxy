@@ -82,7 +82,9 @@ function formatTransaction(tx) {
   // blockNumber?  need set blockNumber
   tx.input = tx.data;
   tx.from = format.hexAddress(tx.from);
-  tx.to = format.hexAddress(tx.to);
+  if(tx.to) {
+    tx.to = format.hexAddress(tx.to);
+  }
 
   delKeys(tx, [
     "data",

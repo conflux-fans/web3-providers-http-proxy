@@ -209,7 +209,9 @@ function cfx2Eth(options) {
     }
     
     txReceipt.from = format.formatHexAddress(txReceipt.from);
-    txReceipt.to = format.formatHexAddress(txReceipt.to);
+    if (txReceipt.to) {
+      txReceipt.to = format.formatHexAddress(txReceipt.to);
+    }
     txReceipt.gasUsed = txReceipt.gasFee;  // use gasFee as gasUsed
     if (txReceipt.logs) {
       txReceipt.logs.forEach(

@@ -6,11 +6,11 @@ function sendMiddleware(url) {
   return createAsyncMiddleware(sendRequest);
 
   async function sendRequest(req, res, next) {
-    let tmp = await provider.request(req);
-    if (tmp.result) {
-      res.result = tmp.result;
+    let _response = await provider.request(req);
+    if (_response.error) {
+      res.error = _response.error;
     } else {
-      res.error = tmp.error;
+      res.result = _response.result;
     }
   }
 }

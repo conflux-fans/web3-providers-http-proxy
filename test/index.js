@@ -8,7 +8,7 @@ const testAddress = 'cfxtest:aak2rra2njvd77ezwjvx04kkds9fzagfe6d5r8e957';
 const hexTestAddress = '0x1386b4185a223ef49592233b69291bbe5a80c527';
 
 async function send(method, ...params) {
-  const payload = util.buildJsonRpcRequest(method, ...params);
+  const payload = util.buildJsonRpcPayload(method, ...params);
   return await proxy.send(payload);
 }
 

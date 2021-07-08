@@ -76,10 +76,19 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 * eth_getWork ?
 * eth_submitWork ?
 * eth_submitHashrate ?
-
 * eth_coinbase ?
 
 * net_peerCount  ?
 * net_listening  ?
 
 * db & shh methods ?
+
+
+
+
+
+### RPC APIs
+
+1. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/
+2. http://cw.hubwiz.com/card/c/parity-rpc-api/
+3. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/

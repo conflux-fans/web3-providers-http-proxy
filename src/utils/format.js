@@ -13,12 +13,11 @@ function formatEpoch(tag) {
 }
   
 function formatEpochOfParams(params, index) {
-  if (params[index]) {
-    params[index] = formatEpoch(params[index]);
-  }
+  if (!params[index]) return;
+  params[index] = formatEpoch(params[index]);
 }
 
-// format from, to, gas, gasPrice
+// format commons: from, to, gas, gasPrice
 function formatCommonInput(params, networkId, txIndex = 0, epochIndex = 1) {
   let ti = txIndex;
   if (params[ti]) {
@@ -79,12 +78,10 @@ function formatBlock(block) {
 }
 
 function formatTransaction(tx) {
-  // blockNumber?  need set blockNumber
+  // blockNumber?
   tx.input = tx.data;
-  tx.from = format.hexAddress(tx.from);
-  if(tx.to) {
-    tx.to = format.hexAddress(tx.to);
-  }
+  tx.from = formatHexAddress(tx.from);
+  tx.to = formatHexAddress(tx.to);
 
   delKeys(tx, [
     "data",
@@ -166,12 +163,12 @@ function deepFormatAnyAddress(
   tohex = false,
   cache = new Map()
 ) {
-  // from, to, contractAddress, contractConcrete, address, string
+  // from, to, contractAddress, contractConcreate, address, string
   // debug("deepFormatAddress obj", obj, typeof obj);
   if (!obj) return obj;
   if (cache.has(obj)) return cache.get(obj);
 
-  // console.log("pre format obj", obj, typeof obj);
+  debug("pre format obj", obj, typeof obj);
 
   let result = obj;
   if (typeof obj === "string") {
@@ -179,7 +176,7 @@ function deepFormatAnyAddress(
     cache.set(Object(obj), result);
   } else if (Array.isArray(obj)) {
     cache.set(Object(obj), obj);
-    // console.log("is array", Array.isArray(obj));
+    debug("is array", Array.isArray(obj));
     for (let i in obj) {
       obj[i] = deepFormatAnyAddress(obj[i], networkId, tohex, cache);
     }
@@ -200,6 +197,10 @@ function formatTxHexAddress(tx) {
   return format.callTxAdvance(0, true)(tx);
 }
 
+function formatHexAddress(address) {
+  return address ? format.hexAddress(address) : address
+}
+
 module.exports = {
   formatCommonInput,
   formatTransaction,
@@ -208,7 +209,7 @@ module.exports = {
   formatEpoch,
   formatEpochOfParams,
   formatAddress: format.address,
-  formatHexAddress: address => address ? format.hexAddress(address) : address,
+  formatHexAddress,
   formatTxHexAddress,
   deepFormatAddress: (obj, networkId) => deepFormatAnyAddress(obj, networkId),
   deepFormatHexAddress: obj => deepFormatAnyAddress(obj, 0, true),

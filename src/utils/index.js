@@ -1,5 +1,4 @@
-const _ = require('lodash');
-const assert = require('assert');
+const { ethers } = require("ethers");
 
 function setNull(object, keys) {
   for (let key of keys) {
@@ -13,7 +12,7 @@ function delKeys(object, keys) {
   }
 }
 
-function buildJsonRpcRequest(method, ...params) {
+function buildJsonRpcPayload(method, ...params) {
   return {
     "jsonrpc": "2.0",
     "id": Date.now().toString(),
@@ -22,30 +21,18 @@ function buildJsonRpcRequest(method, ...params) {
   }
 }
 
-function isHex(str) {
-  assert(_.isString(str), "required a string");
-  assert(str.startsWith('0x') || str.startsWith('0X'));
-}
-
-function isHexOrNull(str) {
-  if (!str) return;
-  isHex(str);
-}
-
 module.exports = {
-  emptyFn: origin => origin,
+  emptyFN: origin => origin,
 
-  asyncEmptyFn: async origin => origin,
-
-  numToHex: num => `0x${num.toString(16)}`,
+  asyncEmptyFN: async origin => origin,
 
   setNull,
   
   delKeys,
 
-  buildJsonRpcRequest,
+  buildJsonRpcPayload,
 
-  isHexOrNull,
+  numToHex: ethers.utils.hexValue,
 
-  isHex,
+  isHex: ethers.utils.isHexString,
 };

@@ -2,7 +2,7 @@
 const { hexTestAddress, isHex, isHexOrNull } = require('./index');
 const assert = require('chai').assert;
 const expect = require('chai').expect;
-const { util: {buildJsonRpcRequest}} = require('../src');
+const { util: {buildJsonRpcPayload}} = require('../src');
 const { util } = require('../src/');
 
 const wssURL = 'ws://testnet-rpc.conflux-chain.org.cn/ws/v2';
@@ -74,7 +74,7 @@ const receiptKeys = [
   ];
 
 async function send(method, ...params) {
-    let payload = buildJsonRpcRequest(method, ...params);
+    let payload = buildJsonRpcPayload(method, ...params);
     let res = await proxy.send(payload);
     //console.log('res: ', res)
     return res;

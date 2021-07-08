@@ -32,8 +32,8 @@ function cfx2Eth(options) {
     'eth_sendTransaction': createAsyncMiddleware(sendTransaction),
     'net_version': createAsyncMiddleware(getNetVersion),
     'web3_sha3': createAsyncMiddleware(webSha3),
-    //eth_ => cfx_ 
     'eth_sendRawTransaction': createAsyncMiddleware(sendRawTransaction),
+    //eth_ => cfx_ 
     'eth_gasPrice': createAsyncMiddleware(adaptMethod),
     'web3_clientVersion': createAsyncMiddleware(adaptMethod),
     'eth_coinbase': createAsyncMiddleware(adaptMethod),
@@ -42,7 +42,7 @@ function cfx2Eth(options) {
   });
 
   async function adaptMethod(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
+    req.method = defaultMethodAdaptor(req.method);  // TODO: adapt method in one middleware
     await next();
   }
 
@@ -55,7 +55,7 @@ function cfx2Eth(options) {
   async function getAccounts(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = res.result.map(format.formatHexAddress);
   }
 
@@ -76,21 +76,21 @@ function cfx2Eth(options) {
     req.method = defaultMethodAdaptor(req.method);
     req.params = format.formatCommonInput(req.params, networkId);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = res.result.gasUsed;
   }
 
   async function getChainId(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = res.result.chainId;
   }
 
   async function getBlockByHash(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     format.formatBlock(res.result);
   }
 
@@ -98,21 +98,21 @@ function cfx2Eth(options) {
     req.method = defaultMethodAdaptor(req.method);
     format.formatEpochOfParams(req.params, 0);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     format.formatBlock(res.result);
   }
 
   async function getBlockTransactionCountByHash(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = util.numToHex(res.result.transactions.length);
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = util.numToHex(res.result.transactions.length);
   }
 
@@ -154,7 +154,7 @@ function cfx2Eth(options) {
       }
     }
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result.forEach(format.formatLog);
   }
 
@@ -170,7 +170,7 @@ function cfx2Eth(options) {
     const index = Number(req.params[1]);
     req.params[1] = true;
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = res.result.transactions[index];
     formatTX(res.result);
   }
@@ -180,7 +180,7 @@ function cfx2Eth(options) {
     const index = Number(req.params[1]);
     req.params[1] = true;
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = res.result.transactions[index];
     formatTX(res.result);
   }
@@ -188,7 +188,7 @@ function cfx2Eth(options) {
   async function getTransactionByHash(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     await formatTX(res.result);
   }
 
@@ -202,18 +202,12 @@ function cfx2Eth(options) {
   async function getTransactionReceipt(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     let txReceipt = res.result;
     txReceipt.contractCreated = format.formatHexAddress(txReceipt.contractCreated);
     txReceipt.from = format.formatHexAddress(txReceipt.from);
     txReceipt.to = format.formatHexAddress(txReceipt.to);
-    txReceipt.gasUsed = txReceipt.gasFee;  // use gasFee as gasUsed
-    if (txReceipt.logs) {
-      txReceipt.logs.forEach(
-        l => (l.address = format.formatHexAddress(l.address))
-      );
-    }
-
+    txReceipt.gasUsed = txReceipt.gasFee;  // NOTE: use gasFee as gasUsed
     txReceipt.contractAddress = txReceipt.contractCreated;
     txReceipt.blockNumber = txReceipt.epochNumber;
     txReceipt.transactionIndex = txReceipt.index;
@@ -221,6 +215,24 @@ function cfx2Eth(options) {
       ? "0x0"
       : "0x1"; // conflux and eth status code is opposite
     txReceipt.cumulativeGasUsed = txReceipt.gasUsed; // NOTE: this is an fake value
+    // feed log info
+    let logs = [];
+    if (txReceipt.logs) {
+      for(let i in txReceipt.logs) {
+        let log = txReceipt.logs[i];
+        logs.push({
+          address: format.formatHexAddress(log.address),
+          data: log.data,
+          topics: log.topics,
+          logIndex: format.numToHex(Number(i)),  // NOTE: this is the index in receipt log array, it should be index in the block
+          blockNumber: txReceipt.blockNumber,
+          blockHash: txReceipt.blockHash,
+          transactionHash: txReceipt.transactionHash,
+          transactionIndex: txReceipt.transactionIndex
+        });
+      }
+    }
+    txReceipt.logs = logs;
     util.delKeys(txReceipt, [
       "contractCreated",
       "epochNumber",
@@ -260,7 +272,7 @@ function cfx2Eth(options) {
   async function getNetVersion(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     await next();
-    if (!res || !res.result) return;
+    if (!res.result) return;
     res.result = res.result.networkId;
   }
 
@@ -275,6 +287,7 @@ function cfx2Eth(options) {
     const data = req.params[0];
     const toSign = Buffer.from(data.slice(2), 'hex');
     res.result = format.hex(sign.keccak256(toSign));
+    return;
   }
 
   function sendTxMethodAdaptor(method, params) {

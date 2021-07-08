@@ -47,6 +47,9 @@ function ethRawTxConverter(rawTx) {
   if (!txInfo.chainId || txInfo.v < 35) {
     throw new Error('Unsupported old ethereum raw transaction');
   }
+  if (txInfo.to && !(txInfo.to.startsWith('0x1') || txInfo.to.startsWith('0x8') || txInfo.to.startsWith('0x0'))) {
+    throw new Error('Transaction\'s should start with 0x0, 0x1, 0x8');
+  }
   txInfo.epochHeight = MAX_UINT64;
   txInfo.storageLimit = MAX_UINT64;
   txInfo.v -= txInfo.chainId * 2 + 35;

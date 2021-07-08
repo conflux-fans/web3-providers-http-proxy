@@ -62,7 +62,7 @@ function cfx2Eth(options) {
   async function getBlockNumber(req, res, next) {
     req.method = defaultMethodAdaptor(req.method);
     // format.formatEpochOfParams(req.params, 0);
-    req.params = [];
+    req.params = ['latest_state'];
     await next();
   }
 
@@ -124,7 +124,7 @@ function cfx2Eth(options) {
     if (res && res.error) {
       const {code, message} = res.error;
       if (code == -32016 || (code === -32602 && message === 'Invalid parameters: address')) {
-        res.error = null;
+        delete res.error;
         res.result = "0x";
       }
     }
@@ -204,14 +204,9 @@ function cfx2Eth(options) {
     await next();
     if (!res || !res.result) return;
     let txReceipt = res.result;
-    if (txReceipt.contractCreated) {
-      txReceipt.contractCreated = format.formatHexAddress(txReceipt.contractCreated);
-    }
-    
+    txReceipt.contractCreated = format.formatHexAddress(txReceipt.contractCreated);
     txReceipt.from = format.formatHexAddress(txReceipt.from);
-    if (txReceipt.to) {
-      txReceipt.to = format.formatHexAddress(txReceipt.to);
-    }
+    txReceipt.to = format.formatHexAddress(txReceipt.to);
     txReceipt.gasUsed = txReceipt.gasFee;  // use gasFee as gasUsed
     if (txReceipt.logs) {
       txReceipt.logs.forEach(
@@ -296,7 +291,6 @@ function cfx2Eth(options) {
       tx.blockNumber = util.numToHex(block.epochNumber);
     }
   }
-
 
 }
 

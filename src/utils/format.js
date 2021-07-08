@@ -208,7 +208,7 @@ module.exports = {
   formatEpoch,
   formatEpochOfParams,
   formatAddress: format.address,
-  formatHexAddress: format.hexAddress,
+  formatHexAddress: address => address ? format.hexAddress(address) : address,
   formatTxHexAddress,
   deepFormatAddress: (obj, networkId) => deepFormatAnyAddress(obj, networkId),
   deepFormatHexAddress: obj => deepFormatAnyAddress(obj, 0, true),

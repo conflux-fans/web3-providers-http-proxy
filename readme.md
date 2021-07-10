@@ -6,20 +6,6 @@ Install through npm
 ```sh
 $ npm install web3-providers-http-proxy
 ```
-Initiate and set to web3 or contract object.
-
-```html
-<script src="./web3-providers-http-proxy/dist/web3-provider-proxy.min.js"></script>
-<script>
-const URL = 'https://testnet-rpc.conflux-chain.org.cn/v2';
-const provider = new HttpProvider(URL, {
-  chainAdaptor: ethToConflux,
-  networkId: 1,
-});
-web3.setProvider(provider);
-</script>
-```
-
 #### JsonRpcProxy
 
 * support **websocket** and **http** url 
@@ -41,10 +27,9 @@ See tests for usage details.
 * latest -> latest_state
 
 ### Address
-2. hex to base32
+* hex40 to base32
 
 ### Supported RPC methods
-
 ```js
 const ETH_TO_CFX_METHOD_MAPPER = {
   eth_blockNumber: 'cfx_epochNumber',
@@ -77,8 +62,6 @@ const ETH_TO_CFX_METHOD_MAPPER = {
 };
 ```
 
-
-### Docs
-
+## References
 1. [Conflux RPC doc](https://developer.conflux-chain.org/docs/conflux-doc/docs/json_rpc)
 2. [Ethereum RPC doc](https://eth.wiki/json-rpc/API)

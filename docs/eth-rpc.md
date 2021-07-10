@@ -25,7 +25,6 @@ When requests are made that act on the state of conflux, the epoch number parame
 Noticed that for performance optimization concern, the lasted mined epochs are not executed, so there is no state available in these epochs. For most of RPCs related to state query, the "latest_state" is recommended.
 
 ### RPC method mapping
-
 * eth_protocolVersion  ?
 * eth_gasPrice
 * eth_accounts
@@ -83,12 +82,7 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 
 * db & shh methods ?
 
-
-
-
-
 ### RPC APIs
-
 1. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/
 2. http://cw.hubwiz.com/card/c/parity-rpc-api/
 3. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/

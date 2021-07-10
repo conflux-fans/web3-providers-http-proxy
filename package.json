@@ -1,6 +1,6 @@
 {
   "name": "web3-providers-http-proxy",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).",
   "main": "./src/index.js",
   "scripts": {
@@ -14,13 +14,10 @@
     "debug": "^4.1.1",
     "ethereum-tx-decoder": "^3.0.0",
     "ethers": "^5.4.0",
-    "js-conflux-sdk": "^1.5.11",
+    "js-conflux-sdk": "^1.6.9",
     "json-rpc-engine": "^6.1.0",
     "lodash": "^4.17.21",
-    "rlp": "^2.2.6",
-    "web3-core-helpers": "^1.2.9",
-    "web3-providers-http": "^1.2.9",
-    "xhr2-cookies": "^1.1.0"
+    "rlp": "^2.2.6"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",

@@ -47,6 +47,7 @@ function formatBlock(block) {
   block.uncles = []; // No uncles in conflux
   block.miner = format.hexAddress(block.miner);
   block.totalDifficulty = block.difficulty;  // totalDifficulty?
+  block.extraData = '0x';
   // format tx object
   if (
     block.tranactions &&
@@ -70,7 +71,7 @@ function formatBlock(block) {
     "custom"
   ]);
   setNull(block, [
-    "extraData",  // extraData?
+    // "extraData",  // extraData?
     "mixHash",
     "sha3Uncles",  // sha3Uncles?
   ]);

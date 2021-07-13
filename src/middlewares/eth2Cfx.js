@@ -137,13 +137,14 @@ function cfx2Eth(options) {
       let toBlock = req.params[0].toBlock;
       req.params[0].fromEpoch = format.formatEpoch(fromBlock);
       req.params[0].toEpoch = format.formatEpoch(toBlock);
-      // blockhash
-      if (req.params[0].blockhash) {
+      // blockHash
+      if (req.params[0].blockHash) {
         if (_.isArray(req.params[0].blockHashes)) {
-          req.params[0].blockHashes.push(req.params[0].blockhash);
+          req.params[0].blockHashes.push(req.params[0].blockHash);
         } else {
-          req.params[0].blockHashes = [req.params[0].blockhash];
+          req.params[0].blockHashes = [req.params[0].blockHash];
         }
+        delete req.params[0].blockHash;
       }
       if (req.params[0].address) {
         if (_.isArray(req.params[0].address)) {
@@ -224,7 +225,7 @@ function cfx2Eth(options) {
           address: format.formatHexAddress(log.address),
           data: log.data,
           topics: log.topics,
-          logIndex: format.numToHex(Number(i)),  // NOTE: this is the index in receipt log array, it should be index in the block
+          logIndex: util.numToHex(Number(i)),  // NOTE: this is the index in receipt log array, it should be index in the block
           blockNumber: txReceipt.blockNumber,
           blockHash: txReceipt.blockHash,
           transactionHash: txReceipt.transactionHash,

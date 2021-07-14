@@ -1,3 +1,7 @@
+### TODOs
+1. support metamask -- Done
+2. work with ethers.js
+3. work with hardhat
 
 ### What has been adapted
 0. RPC method
@@ -5,13 +9,10 @@
 2. epochTag
 3. Object: block, tx, receipt, log
 
-### TODOs
-
 ##### More RPC methods
 2. getBlockByEpoch should return all TX of one epoch
 3. Trace related methods
 4. pendingTransaction
-
 
 ##### More tests
 1. check method's default parameter, empty response, empty field

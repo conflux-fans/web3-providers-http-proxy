@@ -1,7 +1,7 @@
 const { createAsyncMiddleware, createScaffoldMiddleware } = require('json-rpc-engine');
 const { Conflux, Transaction, sign, format: sdkFormat } = require('js-conflux-sdk');
 const _ = require('lodash');
-const defaultMethodAdaptor = require('../utils/mapETHMethod');
+// const defaultMethodAdaptor = require('../utils/mapETHMethod');
 const format = require('../utils/format');
 const util = require('../utils');
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
@@ -33,47 +33,44 @@ function cfx2Eth(options) {
     'net_version': createAsyncMiddleware(getNetVersion),
     'web3_sha3': createAsyncMiddleware(webSha3),
     'eth_sendRawTransaction': createAsyncMiddleware(sendRawTransaction),
+    'eth_subscribe': createAsyncMiddleware(subscribe),
     //eth_ => cfx_ 
-    'eth_gasPrice': createAsyncMiddleware(adaptMethod),
-    'web3_clientVersion': createAsyncMiddleware(adaptMethod),
-    'eth_coinbase': createAsyncMiddleware(adaptMethod),
-    'eth_sign': createAsyncMiddleware(adaptMethod),
-    'eth_signTransaction': createAsyncMiddleware(adaptMethod),
+    // 'eth_unsubscribe': createAsyncMiddleware(adaptMethod), 
+    // 'eth_gasPrice': createAsyncMiddleware(adaptMethod),
+    // 'web3_clientVersion': createAsyncMiddleware(adaptMethod),
+    // 'eth_coinbase': createAsyncMiddleware(adaptMethod),
+    // 'eth_sign': createAsyncMiddleware(adaptMethod),
+    // 'eth_signTransaction': createAsyncMiddleware(adaptMethod),
   });
 
-  async function adaptMethod(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);  // TODO: adapt method in one middleware
-    await next();
-  }
+  // async function adaptMethod(req, res, next) {
+  //   req.method = defaultMethodAdaptor(req.method);
+  //   await next();
+  // }
 
   async function sendRawTransaction(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     req.params[0] = ethRawTxConverter(req.params[0]);
     await next();
   }
 
   async function getAccounts(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
     res.result = res.result.map(format.formatHexAddress);
   }
 
   async function getBlockNumber(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     // format.formatEpochOfParams(req.params, 0);
     req.params = ['latest_state'];
     await next();
   }
 
   async function call(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     format.formatCommonInput(req.params, networkId);
     await next();
   }
 
   async function estimateGas(req, res, next, end) {
-    req.method = defaultMethodAdaptor(req.method);
     req.params = format.formatCommonInput(req.params, networkId);
     await next();
     if (!res.result) return;
@@ -81,21 +78,18 @@ function cfx2Eth(options) {
   }
 
   async function getChainId(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
     res.result = res.result.chainId;
   }
 
   async function getBlockByHash(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
     format.formatBlock(res.result);
   }
 
   async function getBlockByNumber(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     format.formatEpochOfParams(req.params, 0);
     await next();
     if (!res.result) return;
@@ -103,21 +97,18 @@ function cfx2Eth(options) {
   }
 
   async function getBlockTransactionCountByHash(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
     res.result = util.numToHex(res.result.transactions.length);
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
     res.result = util.numToHex(res.result.transactions.length);
   }
 
   async function getCode(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     req.params[0] = format.formatAddress(req.params[0], networkId);
     format.formatEpochOfParams(req.params, 1);
     await next();
@@ -131,28 +122,8 @@ function cfx2Eth(options) {
   }
 
   async function getLogs(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     if (req.params.length > 0) {
-      let fromBlock = req.params[0].fromBlock;
-      let toBlock = req.params[0].toBlock;
-      req.params[0].fromEpoch = format.formatEpoch(fromBlock);
-      req.params[0].toEpoch = format.formatEpoch(toBlock);
-      // blockHash
-      if (req.params[0].blockHash) {
-        if (_.isArray(req.params[0].blockHashes)) {
-          req.params[0].blockHashes.push(req.params[0].blockHash);
-        } else {
-          req.params[0].blockHashes = [req.params[0].blockHash];
-        }
-        delete req.params[0].blockHash;
-      }
-      if (req.params[0].address) {
-        if (_.isArray(req.params[0].address)) {
-          req.params[0].address = req.params[0].address.map(a => format.formatAddress(a, networkId));
-        } else {
-          req.params[0].address = format.formatAddress(req.params[0].address, networkId);
-        }
-      }
+      _formatFilter(req.params[0]);
     }
     await next();
     if (!res.result) return;
@@ -160,48 +131,42 @@ function cfx2Eth(options) {
   }
 
   async function getStorageAt(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     req.params[0] = format.formatAddress(req.params[0], networkId);
     format.formatEpochOfParams(req.params, 2);
     await next();
   }
 
   async function getTransactionByBlockHashAndIndex(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     const index = Number(req.params[1]);
     req.params[1] = true;
     await next();
     if (!res.result) return;
     res.result = res.result.transactions[index];
-    formatTX(res.result);
+    await _formatTxAndFeedBlockNumber(res.result);
   }
 
   async function getTransactionByBlockNumberAndIndex(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     const index = Number(req.params[1]);
     req.params[1] = true;
     await next();
     if (!res.result) return;
     res.result = res.result.transactions[index];
-    formatTX(res.result);
+    await _formatTxAndFeedBlockNumber(res.result);
   }
 
   async function getTransactionByHash(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
-    await formatTX(res.result);
+    await _formatTxAndFeedBlockNumber(res.result);
   }
 
   async function getTransactionCount(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     req.params[0] = format.formatAddress(req.params[0], networkId);
     format.formatEpochOfParams(req.params, 1);
     await next();
   }
 
   async function getTransactionReceipt(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
     let txReceipt = res.result;
@@ -251,7 +216,7 @@ function cfx2Eth(options) {
 
   async function sendTransaction(req, res, next) {
     if (params.length === 0) throw new Error('The first parameter should be an transaction');
-    req.method = sendTxMethodAdaptor(req.method, req.params);
+    req.method = _mapSendTxMethod(req.method, req.params);
     req.params[0] = await format.formatTxParams(cfx, req.params[0]);
     if (cfx.wallet.has(req.params[0].from)) {
       let tx = new Transaction(req.params[0]);
@@ -271,14 +236,12 @@ function cfx2Eth(options) {
   }
 
   async function getNetVersion(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     await next();
     if (!res.result) return;
     res.result = res.result.networkId;
   }
 
   async function getBalance(req, res, next) {
-    req.method = defaultMethodAdaptor(req.method);
     req.params[0] = format.formatAddress(req.params[0], networkId);
     format.formatEpochOfParams(req.params, 1);
     await next();
@@ -291,19 +254,56 @@ function cfx2Eth(options) {
     return;
   }
 
-  function sendTxMethodAdaptor(method, params) {
+  // TODO: notification should be adapt in websocket event handler
+  async function subscribe(req, res, next) {
+    const topic = req.params[0];
+    if (topic === 'logs' && req.params[1]) {
+      _formatFilter(req.params[1]);
+    }
+    await next();
+    /* if (topic === 'logs') {
+
+    } else if(topic === 'newHeads') {
+
+    } */
+  }
+
+  function _mapSendTxMethod(method, params) {
     let hexAddress = format.formatHexAddress(params[0].from);
     let address = format.formatAddress(hexAddress, networkId);
     return cfx.wallet.has(address) ? 'cfx_sendRawTransaction' : method;
   }
 
-  async function formatTX(tx) {
+  async function _formatTxAndFeedBlockNumber(tx) {
     if (!tx) return;
     format.formatTransaction(tx);
-    if (tx.blockHash) {
-      const block = await cfx.getBlockByHash(tx.blockHash);
-      tx.blockNumber = util.numToHex(block.epochNumber);
+    if (tx.blockHash) return;
+    const block = await cfx.getBlockByHash(tx.blockHash);
+    tx.blockNumber = util.numToHex(block.epochNumber);
+  }
+
+  function _formatFilter(filter) {
+    let fromBlock = filter.fromBlock;
+    let toBlock = filter.toBlock;
+    filter.fromEpoch = format.formatEpoch(fromBlock);
+    filter.toEpoch = format.formatEpoch(toBlock);
+    // blockHash
+    if (filter.blockHash) {
+      if (_.isArray(filter.blockHashes)) {
+        filter.blockHashes.push(filter.blockHash);
+      } else {
+        filter.blockHashes = [filter.blockHash];
+      }
+      delete filter.blockHash;
     }
+    if (filter.address) {
+      if (_.isArray(filter.address)) {
+        filter.address = filter.address.map(a => format.formatAddress(a, networkId));
+      } else {
+        filter.address = format.formatAddress(filter.address, networkId);
+      }
+    }
+    return filter;
   }
 
 }

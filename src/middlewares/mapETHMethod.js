@@ -1,3 +1,15 @@
+const { createAsyncMiddleware } = require('json-rpc-engine');
+
+function methodMapMiddleware() {
+  return createAsyncMiddleware(async function adaptMethod(req, res, next) {
+    req.method = _mapETHMethod(req.method);
+    await next();
+  });
+}
+
+module.exports = methodMapMiddleware;
+
+
 const ETH_TO_CFX_METHOD_MAPPER = {
   eth_blockNumber: 'cfx_epochNumber',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',
@@ -26,9 +38,11 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   eth_sign: 'sign',
   eth_signTransaction: 'cfx_signTransaction',
   web3_sha3: 'web3_sha3',
+  eth_subscribe: 'cfx_subscribe',
+  eth_unsubscribe: 'cfx_unsubscribe',
 };
 
-module.exports = function (method) {
+function _mapETHMethod(method) {
   return ETH_TO_CFX_METHOD_MAPPER[method] || method;
 }
 

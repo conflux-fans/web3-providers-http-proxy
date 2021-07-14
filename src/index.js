@@ -1,6 +1,7 @@
 const { JsonRpcEngine } = require("json-rpc-engine");
 const cfx2Eth = require('./middlewares/eth2Cfx');
 const sendJSONRPC = require('./middlewares/send');
+const methodMapMiddleware = require('./middlewares/mapETHMethod');
 
 class JsonRpcProxy {
   constructor(url, networkId) {
@@ -8,6 +9,7 @@ class JsonRpcProxy {
     this.networkId = networkId;
     this.engine = new JsonRpcEngine();
     this.engine.push(cfx2Eth({url, networkId}));
+    this.engine.push(methodMapMiddleware());
     this.engine.push(sendJSONRPC(this.url));
   }
 

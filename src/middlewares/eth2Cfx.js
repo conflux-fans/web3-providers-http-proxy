@@ -5,6 +5,7 @@ const _ = require('lodash');
 const format = require('../utils/format');
 const util = require('../utils');
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
+const { ethers } = require('ethers');
 
 function cfx2Eth(options) {
   const cfx = new Conflux(options);
@@ -132,6 +133,7 @@ function cfx2Eth(options) {
 
   async function getStorageAt(req, res, next) {
     req.params[0] = format.formatAddress(req.params[0], networkId);
+    req.params[1] = ethers.utils.hexZeroPad(req.params[1], 32);
     format.formatEpochOfParams(req.params, 2);
     await next();
   }

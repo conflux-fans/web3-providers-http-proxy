@@ -29,7 +29,7 @@ function decodeWithRlp(tx) {
   let rlpDecoded = RLP.decode(tx);
   let [nonce, gasPrice, gas, to, value, data, v, r, s] = rlpDecoded;
   return {
-    nonce: nonce.lengh ? format.hex(nonce) : '0x0',
+    nonce: formatToNumberHex(nonce),
     gasPrice: format.hex(gasPrice),
     gas: format.hex(gas),
     to: format.hex(to),
@@ -38,6 +38,25 @@ function decodeWithRlp(tx) {
     v: format.uInt(v), 
     r: format.hex(r),
     s: format.hex(s),
+  };
+}
+
+function decodeCFXTXWithRlp(tx) {
+  let rlpDecoded = RLP.decode(tx);
+  let [[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data], v, r, s] = rlpDecoded;
+  return {
+    nonce: formatToNumberHex(nonce),
+    gasPrice: format.hex(gasPrice),
+    gas: format.hex(gas),
+    to: format.hex(to),
+    value: formatToNumberHex(value),
+    data: format.hex(data),
+    v: format.uInt(v), 
+    r: format.hex(r),
+    s: format.hex(s),
+    storageLimit: format.hex(storageLimit),
+    chainId: format.hex(chainId),
+    epochHeight: format.hex(epochHeight)
   };
 }
 
@@ -58,4 +77,12 @@ function ethRawTxConverter(rawTx) {
   return cfxTx.serialize();
 }
 
+function formatToNumberHex(buf) {
+  return buf.lengh ? format.hex(buf) : '0x0'
+}
+
 module.exports = ethRawTxConverter;
+
+
+// let decoded = decodeCFXTXWithRlp('0xf877f380844190ab00825208940d2418c13e6d48beee26f2cf42d67dfe0b0613de8088ffffffffffffffff88ffffffffffffffff028001a094c274e6fa1dc73ce514c3c82c98890c616ce5386892029a3631dd5d12539aa2a054bf5caeefaa3e0c91a336e55b77f9ddd2e74e5ddaac1751fecc80cb67c0fc27');
+// console.log(decoded);

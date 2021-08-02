@@ -1,6 +1,9 @@
+# eth-RPC
 
-### default block parameter 
-The following methods have an extra default block parameter: 
+## default block parameter
+
+The following methods have an extra default block parameter:
+
 * eth_getBalance
 * eth_getCode
 * eth_getTransactionCount
@@ -8,13 +11,16 @@ The following methods have an extra default block parameter:
 * eth_call
 
 The following options are possible for the defaultBlock parameter:
+
 * HEX String - an integer block number
 * String "earliest" for the earliest/genesis block
 * String "latest" - for the latest mined block
 * String "pending" - for the pending state/transactions
 
-##### Conflux
+## Conflux
+
 When requests are made that act on the state of conflux, the epoch number parameter determines the height of the epoch. The following options are possible for the epoch number parameter:
+
 * HEX String - an integer epoch number
 * String "earliest" for the epoch of the genesis block
 * String "latest_checkpoint" for the earliest epoch stored in memory
@@ -24,7 +30,8 @@ When requests are made that act on the state of conflux, the epoch number parame
 
 Noticed that for performance optimization concern, the lasted mined epochs are not executed, so there is no state available in these epochs. For most of RPCs related to state query, the "latest_state" is recommended.
 
-### RPC method mapping
+## RPC method mapping
+
 * eth_protocolVersion  ?
 * eth_gasPrice
 * eth_accounts
@@ -82,7 +89,8 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 
 * db & shh methods ?
 
-### RPC APIs
+## RPC APIs
+
 1. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/
 2. http://cw.hubwiz.com/card/c/parity-rpc-api/
 3. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/

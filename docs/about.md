@@ -2,7 +2,6 @@
 ### current issues
 1. conflux 中没有与以太坊 pending 对应的 tag
 2. 部分以太坊方法不支持
-3. getCode 接口对 error 的修改不起作用，应该是 json-rpc-engine 的 bug (似乎是使用姿势不对)
 4. 合约交互过程中如果使用了非0x1 地址会有问题，**需要在文档中说明**
 
 

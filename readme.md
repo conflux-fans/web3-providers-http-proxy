@@ -1,14 +1,19 @@
 # web3-provider-proxy
+
 An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).
 
 ## How to use
+
 Install through npm
+
 ```sh
 $ npm install web3-providers-http-proxy
+//
 ```
-#### JsonRpcProxy
 
-* support **websocket** and **http** url 
+## JsonRpcProxy
+
+* support **websocket** and **http** url
 
 ```js
 const { JsonRpcProxy } = require('web3-provider-http-proxy');
@@ -23,13 +28,16 @@ See tests for usage details.
 ## ETH-to-CFX what has been bridged
 
 ### Tags
+
 * earliest -> earliest
 * latest -> latest_state
 
 ### Address
+
 * hex40 to base32
 
 ### Supported RPC methods
+
 ```js
 const ETH_TO_CFX_METHOD_MAPPER = {
   eth_blockNumber: 'cfx_epochNumber',
@@ -63,5 +71,6 @@ const ETH_TO_CFX_METHOD_MAPPER = {
 ```
 
 ## References
+
 1. [Conflux RPC doc](https://developer.conflux-chain.org/docs/conflux-doc/docs/json_rpc)
 2. [Ethereum RPC doc](https://eth.wiki/json-rpc/API)

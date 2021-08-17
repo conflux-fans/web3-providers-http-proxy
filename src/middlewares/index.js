@@ -1,6 +1,6 @@
 const { JsonRpcEngine } = require("json-rpc-engine");
-const eth2Cfx = require('./middlewares/eth2Cfx');
-const methodMapMiddleware = require('./middlewares/mapETHMethod');
+const eth2Cfx = require('./eth2Cfx');
+const methodMapMiddleware = require('./mapETHMethod');
 
 module.exports = function (options) {
   const {url, networkId} = options;

@@ -50,8 +50,17 @@ function cfx2Eth(options) {
   // }
 
   async function sendRawTransaction(req, res, next) {
-    req.params[0] = ethRawTxConverter(req.params[0]);
+    const cfxTx = ethRawTxConverter(req.params[0]);
+    // TODO: check balance
+    if (cfxTx.info.to && cfxTx.info.to.startsWith('0x8')) {
+      const code = await cfx.getCode(cfxTx.info.to);
+      if (code === '0x') {
+        throw new Error('Contract not exist');
+      }
+    }
+    req.params[0] = cfxTx.rawTx;
     await next();
+    // TODO adapt error
   }
 
   async function getAccounts(req, res, next) {

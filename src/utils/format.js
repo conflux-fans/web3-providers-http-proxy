@@ -83,6 +83,7 @@ function formatTransaction(tx) {
   tx.input = tx.data;
   tx.from = formatHexAddress(tx.from);
   tx.to = formatHexAddress(tx.to);
+  tx.v = utils.numToHex(Number(tx.v) + Number(tx.chainId) * 2 + 35);
 
   delKeys(tx, [
     "data",

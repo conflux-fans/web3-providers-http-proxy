@@ -5,6 +5,7 @@ const { ethers } = require('ethers');
 const format = require('../utils/format');
 const util = require('../utils');
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
+const adaptErrorMsg = require('../utils/adaptErrorMsg');
 
 
 function cfx2Eth(options) {
@@ -50,17 +51,33 @@ function cfx2Eth(options) {
   // }
 
   async function sendRawTransaction(req, res, next) {
-    const cfxTx = ethRawTxConverter(req.params[0]);
-    // TODO: check balance
-    if (cfxTx.info.to && cfxTx.info.to.startsWith('0x8')) {
-      const code = await cfx.getCode(cfxTx.info.to);
+    const {info: tx, rawTx} = ethRawTxConverter(req.params[0]);
+    // check balance
+    const gas = ethers.BigNumber.from(tx.gas);
+    const gasPrice = ethers.BigNumber.from(tx.gasPrice);
+    const value = ethers.BigNumber.from(tx.value);
+    const required = gas.mul(gasPrice).add(value);
+    const balance = await cfx.getBalance(tx.from);
+    if (ethers.BigNumber.from(balance).lt(required)) {
+      throw new Error('insufficient funds for gas * price + value');
+    }
+    // check target contract exist
+    if (tx.to && tx.to.startsWith('0x8')) {
+      const code = await cfx.getCode(tx.to);
       if (code === '0x') {
-        throw new Error('Contract not exist');
+        throw new Error('contract not exist');
       }
     }
-    req.params[0] = cfxTx.rawTx;
+    req.params[0] = rawTx;
     await next();
-    // TODO adapt error
+    // adapt error message
+    if (res._error) {
+      res.error = {
+        code: -32000,
+        message: adaptErrorMsg(req._error.message)
+      }
+      delete res._error;
+    }
   }
 
   async function getAccounts(req, res, next) {

@@ -1,11 +1,11 @@
 const { createAsyncMiddleware, createScaffoldMiddleware } = require('json-rpc-engine');
-const { Conflux, Transaction, sign, format: sdkFormat } = require('js-conflux-sdk');
+const { Conflux, Transaction, sign } = require('js-conflux-sdk');
 const _ = require('lodash');
-// const defaultMethodAdaptor = require('../utils/mapETHMethod');
+const { ethers } = require('ethers');
 const format = require('../utils/format');
 const util = require('../utils');
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
-const { ethers } = require('ethers');
+
 
 function cfx2Eth(options) {
   const cfx = new Conflux(options);
@@ -113,9 +113,17 @@ function cfx2Eth(options) {
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
+    const isPending = req.params[0] === 'pending';
+    if (isPending) {
+      req.method = 'cfx_getAccountPendingTransactions';
+    }
     await next();
     if (!res.result) return;
-    res.result = util.numToHex(res.result.transactions.length);
+    if (isPending) {
+      res.result = req.result.pendingCount;
+    } else {
+      res.result = util.numToHex(res.result.transactions.length);
+    }
   }
 
   async function getCode(req, res, next) {
@@ -173,8 +181,16 @@ function cfx2Eth(options) {
 
   async function getTransactionCount(req, res, next) {
     req.params[0] = format.formatAddress(req.params[0], networkId);
-    format.formatEpochOfParams(req.params, 1);
+    const isPending = req.params[1] === 'pending';
+    if (isPending) {
+      req.method = 'cfx_getAccountPendingInfo';
+    } else {
+      format.formatEpochOfParams(req.params, 1);
+    }
     await next();
+    if (isPending) {
+      res.result = res.result.localNonce;
+    }
   }
 
   async function getTransactionReceipt(req, res, next) {

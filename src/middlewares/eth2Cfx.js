@@ -1,15 +1,18 @@
-const { createAsyncMiddleware, createScaffoldMiddleware } = require('json-rpc-engine');
-const { Conflux, Transaction, sign, format: sdkFormat } = require('js-conflux-sdk');
+const { createScaffoldMiddleware } = require('json-rpc-engine');
+const { Conflux, Transaction, sign } = require('js-conflux-sdk');
 const _ = require('lodash');
 // const defaultMethodAdaptor = require('../utils/mapETHMethod');
 const format = require('../utils/format');
-const util = require('../utils');
+const { numToHex, delKeys, createAsyncMiddleware } = require('../utils');
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
 const { ethers } = require('ethers');
+const { RLP } = require("ethers/lib/utils");
 
 function cfx2Eth(options) {
+
   const cfx = new Conflux(options);
-  const { networkId } = options;
+  let { networkId, respAddressBeHex } = options;
+  // const isAddrToHex = useHexAddr
 
   return createScaffoldMiddleware({
     'eth_accounts': createAsyncMiddleware(getAccounts),
@@ -49,15 +52,21 @@ function cfx2Eth(options) {
   //   await next();
   // }
 
+  async function getNetworkId() {
+    return networkId || (networkId = (await cfx.getStatus()).networkId)
+  }
+
   async function sendRawTransaction(req, res, next) {
-    req.params[0] = ethRawTxConverter(req.params[0]);
+    if (!isCfxTransaction(req.params[0])) {
+      req.params[0] = ethRawTxConverter(req.params[0]);
+    }
     await next();
   }
 
   async function getAccounts(req, res, next) {
     await next();
     if (!res.result) return;
-    res.result = res.result.map(format.formatHexAddress);
+    res.result = await Promise.all(res.result.map(await formatAddress));
   }
 
   async function getBlockNumber(req, res, next) {
@@ -67,12 +76,13 @@ function cfx2Eth(options) {
   }
 
   async function call(req, res, next) {
-    format.formatCommonInput(req.params, networkId);
+    format.formatCommonInput(req.params, await getNetworkId());
     await next();
   }
 
-  async function estimateGas(req, res, next, end) {
-    req.params = format.formatCommonInput(req.params, networkId);
+  async function estimateGas(req, res, next) {
+
+    req.params = format.formatCommonInput(req.params, await getNetworkId());
     await next();
     if (!res.result) return;
     res.result = res.result.gasUsed;
@@ -94,27 +104,29 @@ function cfx2Eth(options) {
     format.formatEpochOfParams(req.params, 0);
     await next();
     if (!res.result) return;
-    format.formatBlock(res.result);
+    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
   }
 
   async function getBlockTransactionCountByHash(req, res, next) {
     await next();
     if (!res.result) return;
-    res.result = util.numToHex(res.result.transactions.length);
+    res.result = numToHex(res.result.transactions.length);
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
     await next();
     if (!res.result) return;
-    res.result = util.numToHex(res.result.transactions.length);
+    res.result = numToHex(res.result.transactions.length);
   }
 
   async function getCode(req, res, next) {
-    req.params[0] = format.formatAddress(req.params[0], networkId);
+    req.params[0] = await formatAddress(req.params[0]);
     format.formatEpochOfParams(req.params, 1);
+    console.log("getcode formated params:", req.params)
     await next();
+    console.log("getcode next response:", res)
     if (res && res.error) {
-      const {code, message} = res.error;
+      const { code, message } = res.error;
       if (code == -32016 || (code === -32602 && message === 'Invalid parameters: address')) {
         delete res.error;
         res.result = "0x";
@@ -128,14 +140,16 @@ function cfx2Eth(options) {
     }
     await next();
     if (!res.result) return;
-    res.result.forEach(format.formatLog);
+    const networkId = await getNetworkId()
+    res.result.forEach(l => format.formatLog(l, networkId, respAddressBeHex));
   }
 
   async function getStorageAt(req, res, next) {
-    req.params[0] = format.formatAddress(req.params[0], networkId);
+    req.params[0] = await formatAddress(req.params[0]);
     req.params[1] = ethers.utils.hexZeroPad(req.params[1], 32);
     format.formatEpochOfParams(req.params, 2);
     await next();
+    res.result = res.result || "0x"
   }
 
   async function getTransactionByBlockHashAndIndex(req, res, next) {
@@ -163,7 +177,7 @@ function cfx2Eth(options) {
   }
 
   async function getTransactionCount(req, res, next) {
-    req.params[0] = format.formatAddress(req.params[0], networkId);
+    req.params[0] = await formatAddress(req.params[0]);
     format.formatEpochOfParams(req.params, 1);
     await next();
   }
@@ -172,9 +186,9 @@ function cfx2Eth(options) {
     await next();
     if (!res.result) return;
     let txReceipt = res.result;
-    txReceipt.contractCreated = format.formatHexAddress(txReceipt.contractCreated);
-    txReceipt.from = format.formatHexAddress(txReceipt.from);
-    txReceipt.to = format.formatHexAddress(txReceipt.to);
+    txReceipt.contractCreated = await formatAddress(txReceipt.contractCreated, respAddressBeHex);
+    txReceipt.from = await formatAddress(txReceipt.from, respAddressBeHex);
+    txReceipt.to = await formatAddress(txReceipt.to, respAddressBeHex);
     txReceipt.gasUsed = txReceipt.gasFee;  // NOTE: use gasFee as gasUsed
     txReceipt.contractAddress = txReceipt.contractCreated;
     txReceipt.blockNumber = txReceipt.epochNumber;
@@ -186,13 +200,13 @@ function cfx2Eth(options) {
     // feed log info
     let logs = [];
     if (txReceipt.logs) {
-      for(let i in txReceipt.logs) {
+      for (let i in txReceipt.logs) {
         let log = txReceipt.logs[i];
         logs.push({
-          address: format.formatHexAddress(log.address),
+          address: await formatAddress(log.address, respAddressBeHex),
           data: log.data,
           topics: log.topics,
-          logIndex: util.numToHex(Number(i)),  // NOTE: this is the index in receipt log array, it should be index in the block
+          logIndex: numToHex(Number(i)),  // NOTE: this is the index in receipt log array, it should be index in the block
           blockNumber: txReceipt.blockNumber,
           blockHash: txReceipt.blockHash,
           transactionHash: txReceipt.transactionHash,
@@ -201,7 +215,7 @@ function cfx2Eth(options) {
       }
     }
     txReceipt.logs = logs;
-    util.delKeys(txReceipt, [
+    delKeys(txReceipt, [
       "contractCreated",
       "epochNumber",
       "index",
@@ -217,9 +231,10 @@ function cfx2Eth(options) {
   }
 
   async function sendTransaction(req, res, next) {
-    if (params.length === 0) throw new Error('The first parameter should be an transaction');
-    req.method = _mapSendTxMethod(req.method, req.params);
-    req.params[0] = await format.formatTxParams(cfx, req.params[0]);
+    if (req.params.length === 0) throw new Error('The first parameter should be an transaction');
+    req.method = await _mapSendTxMethod(req.method, req.params);
+    console.log("networkId:", await getNetworkId())
+    req.params[0] = await format.formatTxParams(cfx, req.params[0], await getNetworkId());
     if (cfx.wallet.has(req.params[0].from)) {
       let tx = new Transaction(req.params[0]);
       // tx.nonce = await cfx.getNextNonce(req.params[0].from);
@@ -231,7 +246,7 @@ function cfx2Eth(options) {
       // tx.gasPrice = Number(gasPrice);
       // tx.storageLimit = Number(estimateValues.storageCollateralized);
       let account = cfx.wallet.get(req.params[0].from);
-      tx.sign(account.privateKey, networkId);
+      tx.sign(account.privateKey, await getNetworkId());
       req.params[0] = tx.serialize();
     }
     await next();
@@ -244,13 +259,14 @@ function cfx2Eth(options) {
   }
 
   async function getBalance(req, res, next) {
-    req.params[0] = format.formatAddress(req.params[0], networkId);
+    req.params[0] = await formatAddress(req.params[0]);
     format.formatEpochOfParams(req.params, 1);
     await next();
   }
 
-  async function webSha3(req, res, next) {
+  async function webSha3(req, res) {
     const data = req.params[0];
+    // eslint-disable-next-line no-undef
     const toSign = Buffer.from(data.slice(2), 'hex');
     res.result = format.hex(sign.keccak256(toSign));
     return;
@@ -270,42 +286,51 @@ function cfx2Eth(options) {
     } */
   }
 
-  function _mapSendTxMethod(method, params) {
-    let hexAddress = format.formatHexAddress(params[0].from);
-    let address = format.formatAddress(hexAddress, networkId);
+  async function _mapSendTxMethod(method, params) {
+    let address = await formatAddress(params[0].from);
     return cfx.wallet.has(address) ? 'cfx_sendRawTransaction' : method;
   }
 
   async function _formatTxAndFeedBlockNumber(tx) {
     if (!tx) return;
-    format.formatTransaction(tx);
-    if (tx.blockHash) return;
+    format.formatTransaction(tx, await getNetworkId(), respAddressBeHex);
+    if (!tx.blockHash) return;
     const block = await cfx.getBlockByHash(tx.blockHash);
-    tx.blockNumber = util.numToHex(block.epochNumber);
+    tx.blockNumber = numToHex(block.epochNumber);
   }
 
-  function _formatFilter(filter) {
-    let fromBlock = filter.fromBlock;
-    let toBlock = filter.toBlock;
+  async function _formatFilter(filter) {
+    let { fromBlock, toBlock, blockHash, blockHashes, address } = filter
+
     filter.fromEpoch = format.formatEpoch(fromBlock);
     filter.toEpoch = format.formatEpoch(toBlock);
-    // blockHash
-    if (filter.blockHash) {
-      if (_.isArray(filter.blockHashes)) {
-        filter.blockHashes.push(filter.blockHash);
+
+    if (blockHash) {
+      if (_.isArray(blockHashes)) {
+        filter.blockHashes.push(blockHash);
       } else {
-        filter.blockHashes = [filter.blockHash];
-      }
-      delete filter.blockHash;
-    }
-    if (filter.address) {
-      if (_.isArray(filter.address)) {
-        filter.address = filter.address.map(a => format.formatAddress(a, networkId));
-      } else {
-        filter.address = format.formatAddress(filter.address, networkId);
+        filter.blockHashes = [blockHash];
       }
     }
+    if (address) {
+      if (_.isArray(address)) {
+        filter.address = await Promise.all(address.map(await formatAddress));
+      } else {
+        filter.address = await formatAddress(address);
+      }
+    }
+
+    delKeys(filter, ["fromBlock", "toBlock", "blockHash"])
     return filter;
+  }
+
+  async function formatAddress(address, toHex) {
+    return format.formatAddress(address, await getNetworkId(), toHex)
+  }
+
+  function isCfxTransaction(rawTransaction) {
+    let [utx] = RLP.decode(rawTransaction)
+    return utx.length == 9
   }
 
 }

@@ -74,3 +74,4 @@ const ETH_TO_CFX_METHOD_MAPPER = {
 
 1. [Conflux RPC doc](https://developer.conflux-chain.org/docs/conflux-doc/docs/json_rpc)
 2. [Ethereum RPC doc](https://eth.wiki/json-rpc/API)
+3. [Ethereum open-RPC](https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=false&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)

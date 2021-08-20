@@ -1,0 +1,26 @@
+[
+  {
+    "jsonrpc": "2.0",
+    "id": "15922956697249514502",
+    "error": {
+        "code": -32000,
+        "message": "insufficient funds for gas * price + value"
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": "15922956697249514502",
+    "error": {
+        "code": -32000,
+        "message": "already known"
+    }
+  },
+  {
+    "jsonrpc": "2.0",
+    "id": "15922956697249514502",
+    "error": {
+        "code": -32000,
+        "message": "nonce too low"
+    }
+  }
+]

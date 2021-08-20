@@ -1,6 +1,15 @@
 # CHANGELOG
 
-## v0.4.1
+## v-next
+
+1. Adapt `getBlockByNumber` to include all tx from one Epoch
+
+## v0.5.0
+
+1. Adapt `sendRawTransaction` error to go-ethereum error, `sendRawTransaction` check balance enough.
+2. Add `pendingNonceAt`, `pendingTransactionCount`
+
+## v0.4.3
 
 1. Restore transaction's `v` to EIP-155
 

@@ -60,7 +60,7 @@ function createAsyncMiddleware(asyncMiddleware) {
       }
     }
     catch (error) {
-      console.error(error)
+      // console.error(error)
       if (error instanceof Error) {
         // eslint-disable-next-line no-ex-assign
         error = {

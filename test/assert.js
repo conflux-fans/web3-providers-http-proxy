@@ -63,6 +63,15 @@ function isTxReceiptWithHexAddress(val) {
     isHexOrNull(val.contractAddress)
 }
 
+function isEip155Sign(tx) {
+    console.log("is eip155sign tx.v", tx.v)
+    assert(tx.v >= 35, `v of eip155 signed tx should not small than 35, actual ${tx.v}`)
+}
+
+function isCFXSign(tx) {
+    assert(tx.v <= 1, `v of cfx signed tx should be 0 or 1, actual ${tx.v}`)
+}
+
 function isErrorUndefined(val) {
     assert.isUndefined(val, `unexpected error: ${unfold(val)}`)
 }
@@ -77,5 +86,7 @@ module.exports = {
     isTxWithHexAddress,
     isTxReceiptWithCfxAddress,
     isTxReceiptWithHexAddress,
+    isEip155Sign,
+    isCFXSign,
     isErrorUndefined
 };

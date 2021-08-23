@@ -1,4 +1,4 @@
-const { asyncSend } = require('./index');
+const { asyncSend } = require('./client');
 const util = require('../src/utils/');
 const { describe, it } = require("mocha")
 const { isHex } = require('./assert')

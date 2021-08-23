@@ -1,18 +1,24 @@
 const { createScaffoldMiddleware } = require('json-rpc-engine');
 const { Conflux, Transaction, sign } = require('js-conflux-sdk');
 const _ = require('lodash');
-// const defaultMethodAdaptor = require('../utils/mapETHMethod');
+const { ethers } = require('ethers');
 const format = require('../utils/format');
 const { numToHex, delKeys, createAsyncMiddleware } = require('../utils');
+const adaptErrorMsg = require('../utils/adaptErrorMsg')
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
-const { ethers } = require('ethers');
 const { RLP } = require("ethers/lib/utils");
 
-function cfx2Eth(options) {
+const defaultOptions = {
+  respAddressBeHex: false,
+  respTxBeEip155: false,
+  url: undefined
+}
+
+function cfx2Eth(options = defaultOptions) {
 
   const cfx = new Conflux(options);
-  let { networkId, respAddressBeHex } = options;
-  // const isAddrToHex = useHexAddr
+  let { respAddressBeHex, respTxBeEip155 } = options;
+  let networkId = undefined;
 
   return createScaffoldMiddleware({
     'eth_accounts': createAsyncMiddleware(getAccounts),
@@ -53,14 +59,41 @@ function cfx2Eth(options) {
   // }
 
   async function getNetworkId() {
-    return networkId || (networkId = (await cfx.getStatus()).networkId)
+    networkId = networkId || (await cfx.getStatus()).networkId
+    return networkId
   }
 
   async function sendRawTransaction(req, res, next) {
     if (!isCfxTransaction(req.params[0])) {
-      req.params[0] = ethRawTxConverter(req.params[0]);
+      const { info: tx, rawTx } = ethRawTxConverter(req.params[0]);
+      // check balance
+      const gas = ethers.BigNumber.from(tx.gas);
+      const gasPrice = ethers.BigNumber.from(tx.gasPrice);
+      const value = ethers.BigNumber.from(tx.value);
+      const required = gas.mul(gasPrice).add(value);
+      const balance = await cfx.getBalance(tx.from);
+      if (ethers.BigNumber.from(balance).lt(required)) {
+        throw new Error('insufficient funds for gas * price + value');
+      }
+      // check target contract exist
+      if (tx.to && tx.to.startsWith('0x8')) {
+        const code = await cfx.getCode(tx.to);
+        if (code === '0x') {
+          throw new Error('contract not exist');
+        }
+      }
+      req.params[0] = rawTx;
     }
+
     await next();
+    // adapt error message
+    if (res._error) {
+      res.error = {
+        code: -32000,
+        message: adaptErrorMsg(req._error.message)
+      }
+      delete res._error;
+    }
   }
 
   async function getAccounts(req, res, next) {
@@ -114,17 +147,25 @@ function cfx2Eth(options) {
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
+    const isPending = req.params[0] === 'pending';
+    if (isPending) {
+      req.method = 'cfx_getAccountPendingTransactions';
+    }
     await next();
     if (!res.result) return;
-    res.result = numToHex(res.result.transactions.length);
+    if (isPending) {
+      res.result = req.result.pendingCount;
+    } else {
+      res.result = numToHex(res.result.transactions.length);
+    }
   }
 
   async function getCode(req, res, next) {
     req.params[0] = await formatAddress(req.params[0]);
     format.formatEpochOfParams(req.params, 1);
-    console.log("getcode formated params:", req.params)
+    // console.log("getcode formated params:", req.params)
     await next();
-    console.log("getcode next response:", res)
+    // console.log("getcode next response:", res)
     if (res && res.error) {
       const { code, message } = res.error;
       if (code == -32016 || (code === -32602 && message === 'Invalid parameters: address')) {
@@ -177,9 +218,17 @@ function cfx2Eth(options) {
   }
 
   async function getTransactionCount(req, res, next) {
-    req.params[0] = await formatAddress(req.params[0]);
-    format.formatEpochOfParams(req.params, 1);
+    req.params[0] = await formatAddress(req.params[0], respAddressBeHex);
+    const isPending = req.params[1] === 'pending';
+    if (isPending) {
+      req.method = 'cfx_getAccountPendingInfo';
+    } else {
+      format.formatEpochOfParams(req.params, 1);
+    }
     await next();
+    if (isPending) {
+      res.result = res.result.localNonce;
+    }
   }
 
   async function getTransactionReceipt(req, res, next) {
@@ -233,7 +282,7 @@ function cfx2Eth(options) {
   async function sendTransaction(req, res, next) {
     if (req.params.length === 0) throw new Error('The first parameter should be an transaction');
     req.method = await _mapSendTxMethod(req.method, req.params);
-    console.log("networkId:", await getNetworkId())
+    // console.log("networkId:", await getNetworkId())
     req.params[0] = await format.formatTxParams(cfx, req.params[0], await getNetworkId());
     if (cfx.wallet.has(req.params[0].from)) {
       let tx = new Transaction(req.params[0]);
@@ -293,7 +342,7 @@ function cfx2Eth(options) {
 
   async function _formatTxAndFeedBlockNumber(tx) {
     if (!tx) return;
-    format.formatTransaction(tx, await getNetworkId(), respAddressBeHex);
+    format.formatTransaction(tx, await getNetworkId(), respAddressBeHex, respTxBeEip155);
     if (!tx.blockHash) return;
     const block = await cfx.getBlockByHash(tx.blockHash);
     tx.blockNumber = numToHex(block.epochNumber);

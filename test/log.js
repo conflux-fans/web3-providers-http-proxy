@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const { asyncSend, asyncSendWithHexAddrRes } = require('./index');
+const { asyncSend, asyncSendWithHexAddrRes } = require('./client');
 const { describe, it } = require("mocha")
 const { isHex, isValidCfxAddress } = require('./assert')
 
@@ -32,7 +32,7 @@ describe('eth_getLogs', function () {
       isValidCfxAddress(result[0].address)
     });
 
-    it('should return hex number', async function () {
+    it('should return hex address', async function () {
       let logFilter = {
         // blockHashes: ['0xc880122fc1e68589087320e1e7e40198c8bb2f95d3730797c3f20f7958efc7cc'],
         fromBlock: 39782984,

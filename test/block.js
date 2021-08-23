@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const { asyncSend: send } = require('./index');
+const { asyncSend: send } = require('./client');
 const util  = require('../src/utils/');
 const { describe, it } = require("mocha")
 

@@ -3,8 +3,8 @@ const { providerFactory } = require('js-conflux-sdk');
 const debug = require("debug")("send")
 const { unfold } = require("../utils")
 
-function sendMiddleware(url) {
-  const provider = providerFactory({ url: url, keepAlive: true });
+function sendMiddleware(url, options) {
+  const provider = providerFactory({ url, ...options });
   return createAsyncMiddleware(sendRequest);
 
   async function sendRequest(req, res) {

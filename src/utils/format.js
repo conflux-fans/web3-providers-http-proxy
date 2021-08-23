@@ -39,7 +39,7 @@ function formatCommonInput(params, networkId, txIndex = 0, epochIndex = 1) {
   return params;
 }
 
-function formatBlock(block, networkId, isAddrToHex) {
+function formatBlock(block, networkId, isAddrToHex, isEip155) {
   block.number = block.epochNumber;
   block.stateRoot = block.deferredStateRoot;
   block.receiptsRoot = block.deferredReceiptsRoot;
@@ -55,7 +55,7 @@ function formatBlock(block, networkId, isAddrToHex) {
     typeof block.tranactions[0] === "object"
   ) {
     for (let tx of block.tranactions) {
-      formatTransaction(tx);
+      formatTransaction(tx, networkId, isAddrToHex, isEip155);
     }
   }
   delKeys(block, [
@@ -78,11 +78,14 @@ function formatBlock(block, networkId, isAddrToHex) {
   return block;
 }
 
-function formatTransaction(tx, networkId, isAddrToHex) {
+function formatTransaction(tx, networkId, isAddrToHex, isEIP155) {
   // blockNumber?
   tx.input = tx.data;
   tx.from = formatAddress(tx.from, networkId, isAddrToHex);
   tx.to = formatAddress(tx.to, networkId, isAddrToHex);
+
+  if (isEIP155)
+    tx.v = numToHex(Number(tx.v) + Number(tx.chainId) * 2 + 35);
 
   delKeys(tx, [
     "data",
@@ -107,7 +110,7 @@ async function formatTxParams(cfx, options, networkId) {
   options.from = formatAddress(options.from, networkId)
   options.to = formatAddress(options.to, networkId)
 
-  console.log("options:", options)
+  // console.log("options:", options)
 
   if (options.value === undefined) {
     options.value = "0x0";

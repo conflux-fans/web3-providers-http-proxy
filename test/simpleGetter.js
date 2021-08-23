@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const { asyncSend, hexTestAddress } = require('./index');
+const { asyncSend, hexTestAddress } = require('./client');
 const { isHex, isHexOrNull } = require('./assert')
 const { describe, it } = require("mocha")
 

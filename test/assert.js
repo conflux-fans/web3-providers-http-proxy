@@ -64,7 +64,6 @@ function isTxReceiptWithHexAddress(val) {
 }
 
 function isEip155Sign(tx) {
-    console.log("is eip155sign tx.v", tx.v)
     assert(tx.v >= 35, `v of eip155 signed tx should not small than 35, actual ${tx.v}`)
 }
 

@@ -75,6 +75,10 @@ function isErrorUndefined(val) {
     assert.isUndefined(val, `unexpected error: ${unfold(val)}`)
 }
 
+function inArray(val, array) {
+    assert(array.indexOf(val) >= 0, `unexpect message: ${val}`)
+}
+
 module.exports = {
     isHex,
     isHexOrNull,
@@ -87,5 +91,6 @@ module.exports = {
     isTxReceiptWithHexAddress,
     isEip155Sign,
     isCFXSign,
-    isErrorUndefined
+    isErrorUndefined,
+    inArray,
 };

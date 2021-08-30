@@ -1,7 +1,8 @@
-const assert = require('chai').assert;
-const { asyncSend: send, isHex: isHex } = require('./client');
+// const assert = require('chai').assert;
+const { asyncSend } = require('./client');
 const util = require('../src/utils');
 const { describe, it } = require("mocha")
+const { isHex, inArray } = require("./assert")
 
 describe('sendTransaction', function () {
   describe('eth_sendTransaction', function () {
@@ -11,12 +12,13 @@ describe('sendTransaction', function () {
         to: '0x1386b4185a223ef49592233b69291bbe5a80c527',
         value: util.numToHex(100)
       };
-      let { result, error } = await send('eth_sendTransaction', data);
+      let { result, error } = await asyncSend('eth_sendTransaction', data);
 
       result
         ? isHex(result)
-        : assert(error.message == "the method cfx_sendTransaction does not exist/is not available"
-          || error.message == "Method not found"
+        : inArray(error.message, ["the method cfx_sendTransaction does not exist/is not available",
+          "Error processing request: failed to sign transaction: SStore(InvalidAccount)",
+          "Method not found"]
         )
     });
   });

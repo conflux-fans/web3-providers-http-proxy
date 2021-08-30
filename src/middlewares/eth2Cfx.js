@@ -99,11 +99,10 @@ function cfx2Eth(options = defaultOptions) {
   async function getAccounts(req, res, next) {
     await next();
     if (!res.result) return;
-    res.result = await Promise.all(res.result.map(await formatAddress));
+    res.result = await Promise.all(res.result.map(formatAddress));
   }
 
   async function getBlockNumber(req, res, next) {
-    // format.formatEpochOfParams(req.params, 0);
     req.params = ['latest_state'];
     await next();
   }
@@ -363,7 +362,7 @@ function cfx2Eth(options = defaultOptions) {
     }
     if (address) {
       if (_.isArray(address)) {
-        filter.address = await Promise.all(address.map(await formatAddress));
+        filter.address = await Promise.all(address.map(formatAddress));
       } else {
         filter.address = await formatAddress(address);
       }

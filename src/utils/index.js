@@ -1,5 +1,10 @@
+
 const { ethers } = require("ethers");
 const util = require("util")
+
+require('debug').formatters.u = (v) => {
+  return unfold(v)
+}
 
 function setNull(object, keys) {
   for (let key of keys) {
@@ -97,5 +102,7 @@ module.exports = {
 
   unfold,
 
-  createAsyncMiddleware
+  createAsyncMiddleware,
+
+  createDebug: require("debug")
 };

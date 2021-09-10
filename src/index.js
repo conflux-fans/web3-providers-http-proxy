@@ -27,12 +27,13 @@ class JsonRpcProxy {
     return this.engine.handle(req)
   }
 
-  request(req, callback) {
-    if (!callback) {
-      return this.engine.handle(req);
-    }
-    this.engine.handle(req, callback);
-  }
+  // Comment because of leads ethers error
+  // request(req, callback) {
+  //   if (!callback) {
+  //     return this.engine.handle(req);
+  //   }
+  //   this.engine.handle(req, callback);
+  // }
 }
 
 module.exports = JsonRpcProxy;

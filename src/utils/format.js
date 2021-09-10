@@ -9,6 +9,7 @@ const EPOCH_MAP = {
 };
 
 function formatEpoch(tag) {
+  if (!tag) return tag;
   return EPOCH_MAP[tag] || numToHex(tag);
 }
 

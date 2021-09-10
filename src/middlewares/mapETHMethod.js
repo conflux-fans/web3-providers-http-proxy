@@ -40,6 +40,7 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   web3_sha3: 'web3_sha3',
   eth_subscribe: 'cfx_subscribe',
   eth_unsubscribe: 'cfx_unsubscribe',
+  personal_unlockAccount: 'unlock_account'
 };
 
 function _mapETHMethod(method) {

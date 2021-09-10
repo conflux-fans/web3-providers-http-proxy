@@ -1,18 +1,30 @@
 const { JsonRpcEngine } = require("json-rpc-engine");
 const eth2Cfx = require('./middlewares');
 const sendJSONRPC = require('./middlewares/send');
+const logger = require('./middlewares/logger')
 
+
+const defaultOption = {
+  respAddressBeHex: false,
+  respTxBeEip155: false
+}
 class JsonRpcProxy {
-  constructor(url, networkId) {
+
+  constructor(url, options = defaultOption) {
     this.url = url;
-    this.networkId = networkId;
+    // this.networkId = options?.networkId;
     this.engine = new JsonRpcEngine();
-    this.engine.push(eth2Cfx({url, networkId}));
-    this.engine.push(sendJSONRPC({url}));
+    this.engine.push(logger)
+    this.engine.push(eth2Cfx({ ...options, url }));
+    this.engine.push(sendJSONRPC(url));
   }
 
-  async send(req) {
-    return await this.engine.handle(req);
+  send(req, callback) {
+    this.engine.handle(req, callback)
+  }
+
+  asyncSend(req) {
+    return this.engine.handle(req)
   }
 
   request(req, callback) {

@@ -9,9 +9,9 @@ const EPOCH_MAP = {
 };
 
 function formatEpoch(tag) {
-  return EPOCH_MAP[tag] || tag;
+  return EPOCH_MAP[tag] || numToHex(tag);
 }
-  
+
 function formatEpochOfParams(params, index) {
   if (!params[index]) return;
   params[index] = formatEpoch(params[index]);
@@ -30,22 +30,22 @@ function formatCommonInput(params, networkId, txIndex = 0, epochIndex = 1) {
     }
     if (params[ti].from) {
       params[ti].from = format.address(params[ti].from, networkId);
-    }  
+    }
     if (params[ti].to) {
       params[ti].to = format.address(params[ti].to, networkId);
-    }  
+    }
   }
   formatEpochOfParams(params, epochIndex);
   return params;
 }
 
-function formatBlock(block) {
+function formatBlock(block, networkId, isAddrToHex, isEip155) {
   block.number = block.epochNumber;
   block.stateRoot = block.deferredStateRoot;
   block.receiptsRoot = block.deferredReceiptsRoot;
   block.logsBloom = block.deferredLogsBloomHash;  // logsBloom?
   block.uncles = []; // No uncles in conflux
-  block.miner = format.hexAddress(block.miner);
+  block.miner = formatAddress(block.miner, networkId, isAddrToHex);
   block.totalDifficulty = block.difficulty;  // totalDifficulty?
   block.extraData = '0x';
   // format tx object
@@ -55,7 +55,7 @@ function formatBlock(block) {
     typeof block.tranactions[0] === "object"
   ) {
     for (let tx of block.tranactions) {
-      formatTransaction(tx);
+      formatTransaction(tx, networkId, isAddrToHex, isEip155);
     }
   }
   delKeys(block, [
@@ -78,12 +78,14 @@ function formatBlock(block) {
   return block;
 }
 
-function formatTransaction(tx) {
+function formatTransaction(tx, networkId, isAddrToHex, isEIP155) {
   // blockNumber?
   tx.input = tx.data;
-  tx.from = formatHexAddress(tx.from);
-  tx.to = formatHexAddress(tx.to);
-  tx.v = numToHex(Number(tx.v) + Number(tx.chainId) * 2 + 35);
+  tx.from = formatAddress(tx.from, networkId, isAddrToHex);
+  tx.to = formatAddress(tx.to, networkId, isAddrToHex);
+
+  if (isEIP155)
+    tx.v = numToHex(Number(tx.v) + Number(tx.chainId) * 2 + 35);
 
   delKeys(tx, [
     "data",
@@ -93,8 +95,8 @@ function formatTransaction(tx) {
   return tx;
 }
 
-function formatLog(l) {
-  l.address = format.hexAddress(l.address);
+function formatLog(l, networkId, isAddrToHex) {
+  l.address = formatAddress(l.address, networkId, isAddrToHex);
   l.logIndex = l.transactionLogIndex;
   l.blockNumber = l.epochNumber;
   delKeys(l, [
@@ -103,29 +105,35 @@ function formatLog(l) {
   ]);
 }
 
-async function formatTxParams(cfx, options) {
+async function formatTxParams(cfx, options, networkId) {
+
+  options.from = formatAddress(options.from, networkId)
+  options.to = formatAddress(options.to, networkId)
+
+  // console.log("options:", options)
+
   if (options.value === undefined) {
     options.value = "0x0";
   }
 
   if (options.nonce === undefined) {
-    options.nonce = await cfx.getNextNonce(options.from);
+    options.nonce = numToHex(await cfx.getNextNonce(options.from));
   }
 
-  if (options.gasPrice === undefined) {
-    options.gasPrice = cfx.defaultGasPrice;
+  if (options.gasPrice === undefined && cfx.defaultGasPrice) {
+    options.gasPrice = numToHex(cfx.defaultGasPrice);
   }
   if (options.gasPrice === undefined) {
     const recommendGas = Number.parseInt(await cfx.getGasPrice());
     options.gasPrice = numToHex(recommendGas || 1); // MIN_GAS_PRICE
   }
 
-  if (options.gas === undefined) {
-    options.gas = cfx.defaultGas;
+  if (options.gas === undefined && cfx.defaultGas) {
+    options.gas = numToHex(cfx.defaultGas);
   }
 
-  if (options.storageLimit === undefined) {
-    options.storageLimit = cfx.defaultStorageLimit;
+  if (options.storageLimit === undefined && cfx.defaultStorageLimit) {
+    options.storageLimit = numToHex(cfx.defaultStorageLimit);
   }
 
   if (options.gas === undefined || options.storageLimit === undefined) {
@@ -135,25 +143,25 @@ async function formatTxParams(cfx, options) {
     } = await cfx.estimateGasAndCollateral(options);
 
     if (options.gas === undefined) {
-      options.gas = gasUsed;
+      options.gas = numToHex(gasUsed)
     }
 
     if (options.storageLimit === undefined) {
-      options.storageLimit = storageCollateralized;
+      options.storageLimit = numToHex(storageCollateralized);
     }
   }
 
   if (options.epochHeight === undefined) {
-    options.epochHeight = await cfx.getEpochNumber();
+    options.epochHeight = numToHex(await cfx.getEpochNumber());
   }
 
-  if (options.chainId === undefined) {
-    options.chainId = cfx.defaultChainId;
+  if (options.chainId === undefined && cfx.defaultChainId) {
+    options.chainId = numToHex(cfx.defaultChainId);
   }
 
   if (options.chainId === undefined) {
     const status = await cfx.getStatus();
-    options.chainId = status.chainId;
+    options.chainId = numToHex(status.chainId);
   }
 
   return options;
@@ -174,7 +182,7 @@ function deepFormatAnyAddress(
 
   let result = obj;
   if (typeof obj === "string") {
-    result = tohex ? format.hexAddress(obj) : format.address(obj, networkId);
+    result = formatAddress(obj, networkId, tohex)
     cache.set(Object(obj), result);
   } else if (Array.isArray(obj)) {
     cache.set(Object(obj), obj);
@@ -200,8 +208,17 @@ function formatTxHexAddress(tx) {
 }
 
 function formatHexAddress(address) {
-  return address ? format.hexAddress(address) : address
+  return address && format.hexAddress(address)
 }
+
+function formatCip37Address(address, networkId) {
+  return address && format.address(address, networkId)
+}
+
+function formatAddress(address, networkId, isToHex) {
+  return isToHex ? formatHexAddress(address) : formatCip37Address(address, networkId)
+}
+
 
 module.exports = {
   formatCommonInput,
@@ -210,7 +227,7 @@ module.exports = {
   formatTxParams,
   formatEpoch,
   formatEpochOfParams,
-  formatAddress: format.address,
+  formatAddress,
   formatHexAddress,
   formatTxHexAddress,
   deepFormatAddress: (obj, networkId) => deepFormatAnyAddress(obj, networkId),

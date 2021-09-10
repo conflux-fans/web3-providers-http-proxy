@@ -146,17 +146,9 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
-    const isPending = req.params[0] === 'pending';
-    if (isPending) {
-      req.method = 'cfx_getAccountPendingTransactions';
-    }
     await next();
     if (!res.result) return;
-    if (isPending) {
-      res.result = req.result.pendingCount;
-    } else {
-      res.result = numToHex(res.result.transactions.length);
-    }
+    res.result = util.numToHex(res.result.transactions.length);
   }
 
   async function getCode(req, res, next) {
@@ -221,6 +213,7 @@ function cfx2Eth(options = defaultOptions) {
     const isPending = req.params[1] === 'pending';
     if (isPending) {
       req.method = 'cfx_getAccountPendingInfo';
+      req.params = req.params.slice(0, 1);
     } else {
       format.formatEpochOfParams(req.params, 1);
     }

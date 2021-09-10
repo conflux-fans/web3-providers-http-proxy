@@ -7,7 +7,7 @@
 ## v0.5.0
 
 1. Adapt `sendRawTransaction` error to go-ethereum error, `sendRawTransaction` check balance enough.
-2. Add `pendingNonceAt`, `pendingTransactionCount`
+2. Add `pendingNonceAt`
 
 ## v0.4.3
 

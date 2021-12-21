@@ -4,7 +4,6 @@ const format = require('../format');
 const _ = require('lodash');
 const util = require('../util');
 const { Conflux, Transaction } = require('js-conflux-sdk');
-const { stat } = require('fs-extra');
 
 
 class Proxy {

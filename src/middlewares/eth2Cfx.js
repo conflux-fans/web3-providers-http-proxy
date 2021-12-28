@@ -146,6 +146,7 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
+    req.params[0] = await adaptBlockNumberTag(req.params[0]);
     await next();
     if (!res.result) return;
     res.result = numToHex(res.result.transactions.length);

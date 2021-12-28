@@ -31,7 +31,7 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   eth_getTransactionReceipt: 'cfx_getTransactionReceipt',
   eth_getLogs: 'cfx_getLogs',
   eth_getBlockTransactionCountByHash: 'cfx_getBlockByHash',
-  eth_getBlockTransactionCountByNumber: 'cfx_getBlockByEpochNumber',
+  eth_getBlockTransactionCountByNumber: 'cfx_getBlockByBlockNumber',
   eth_getTransactionByBlockHashAndIndex: 'cfx_getBlockByHash',
   eth_getTransactionByBlockNumberAndIndex: 'cfx_getBlockByEpochNumber',
   eth_coinbase: null,

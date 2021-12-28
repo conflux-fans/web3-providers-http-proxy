@@ -129,7 +129,8 @@ function cfx2Eth(options = defaultOptions) {
   async function getBlockByHash(req, res, next) {
     await next();
     if (!res.result) return;
-    format.formatBlock(res.result);
+    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
+    await adaptBlockParentHash(res.result);
   }
 
   async function getBlockByNumber(req, res, next) {
@@ -137,6 +138,7 @@ function cfx2Eth(options = defaultOptions) {
     await next();
     if (!res.result) return;
     format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
+    await adaptBlockParentHash(res.result);
   }
 
   async function getBlockTransactionCountByHash(req, res, next) {
@@ -383,6 +385,14 @@ function cfx2Eth(options = defaultOptions) {
       return '0x0';
     }
     return tag;
+  }
+
+  async function adaptBlockParentHash(block) {
+    const parentBlockNumber = ethers.BigNumber(block.number).sub(1).toHexString();
+    const parentBlock = await cfx.provider.call('cfx_getBlockByBlockNumber', parentBlockNumber);
+    if (parentBlock) {
+      block.parentHash = parentBlock.hash;
+    }
   }
 
   function isCfxTransaction(rawTransaction) {

@@ -41,7 +41,7 @@ function formatCommonInput(params, networkId, txIndex = 0, epochIndex = 1) {
 }
 
 function formatBlock(block, networkId, isAddrToHex, isEip155) {
-  block.number = block.epochNumber;
+  block.number = block.blockNumber;
   block.stateRoot = block.deferredStateRoot;
   block.receiptsRoot = block.deferredReceiptsRoot;
   block.logsBloom = block.deferredLogsBloomHash;  // logsBloom?

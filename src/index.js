@@ -1,74 +1,39 @@
-const debug = require("debug")("provider-proxy");
-const Web3HttpProvider = require("web3-providers-http");
-const { ethToConflux, defaultAdaptor } = require("./ethToConflux");
-const { JsonRpcProxy } = require('./JsonRpcProxy');
-const format = require("./format");
-const { Conflux } = require('js-conflux-sdk');
+const { JsonRpcEngine } = require("json-rpc-engine");
+const eth2Cfx = require('./middlewares');
+const sendJSONRPC = require('./middlewares/send');
+const logger = require('./middlewares/logger')
 
-class Web3HttpProviderProxy extends Web3HttpProvider {
-  constructor(host, options) {
-    super(host, options);
-    this.chainAdaptor = options.chainAdaptor || {};
-    if (!options.networkId) {
-      throw new Error("options.networkId is needed");
-    }
-    let cfx = new Conflux({
-      url: host,
-      networkId: options.networkId
-    });
 
-    //
-    let addresses = [];
-    if (options.privateKeys && Array.isArray(options.privateKeys)) {
-      for(let key of options.privateKeys) {
-        let account = cfx.wallet.addPrivateKey(key);
-        addresses.push(account.address);
-      }
-    }
-    if (options.mnemonic) {
+const defaultOption = {
+  respAddressBeHex: false,
+  respTxBeEip155: false
+}
+class JsonRpcProxy {
 
-    }
-    this.addresses = addresses;
-    this.cfx = cfx;
+  constructor(url, options = defaultOption) {
+    this.url = url;
+    // this.networkId = options?.networkId;
+    this.engine = new JsonRpcEngine();
+    this.engine.push(logger)
+    this.engine.push(eth2Cfx({ ...options, url }));
+    this.engine.push(sendJSONRPC(url));
   }
 
-  send(payload, callback) {
-    let originMethod = payload.method;
-    let adaptor = ethToConflux[originMethod] || defaultAdaptor;
-    adaptor.cfx = this.cfx;
-
-    // hack eth_accounts method
-    if (this.addresses.length > 0 && payload.method === 'eth_accounts') {
-      callback(null, {
-        result: this.addresses.map((a) => format.formatHexAddress(a)),
-        jsonrpc: '2.0',
-        id: payload.id
-      });
-      return;
-    }
-    
-    const promiseSend = () => new Promise((resolve, reject) => {
-      debug(`Proxy ${originMethod} to ${payload.method}`);
-      debug(`Proxy params: ${JSON.stringify(payload, null, '\t')}`);
-      super.send(payload, (err, response) => {
-        debug(err, response);
-        err ? reject(err) : resolve(response)
-      });
-    });
-
-    adaptor
-      .adaptInput(payload)
-      .then(promiseSend)
-      .then(adaptor.adaptOutput.bind(adaptor))
-      .then(response => callback(null, response))
-      .catch(err => callback(err));
+  send(req, callback) {
+    this.engine.handle(req, callback)
   }
+
+  asyncSend(req) {
+    return this.engine.handle(req)
+  }
+
+  // Comment because of leads ethers error
+  // request(req, callback) {
+  //   if (!callback) {
+  //     return this.engine.handle(req);
+  //   }
+  //   this.engine.handle(req, callback);
+  // }
 }
 
-module.exports = {
-  HttpProvider: Web3HttpProviderProxy,
-  ethToConflux,
-  format,
-  util: require('./util'),
-  JsonRpcProxy,
-};
+module.exports = JsonRpcProxy;

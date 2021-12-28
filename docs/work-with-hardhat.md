@@ -1,0 +1,3 @@
+# Hardhat
+
+1. hardhat 部署的合约地址跟实际地址不一致 （ethers.js 不兼容导致）

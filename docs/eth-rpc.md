@@ -1,6 +1,8 @@
+# eth-RPC
 
-### default block parameter 
-The following methods have an extra default block parameter: 
+## default block parameter
+
+The following methods have an extra default block parameter:
 
 * eth_getBalance
 * eth_getCode
@@ -15,7 +17,8 @@ The following options are possible for the defaultBlock parameter:
 * String "latest" - for the latest mined block
 * String "pending" - for the pending state/transactions
 
-##### Conflux
+## Conflux
+
 When requests are made that act on the state of conflux, the epoch number parameter determines the height of the epoch. The following options are possible for the epoch number parameter:
 
 * HEX String - an integer epoch number
@@ -27,10 +30,9 @@ When requests are made that act on the state of conflux, the epoch number parame
 
 Noticed that for performance optimization concern, the lasted mined epochs are not executed, so there is no state available in these epochs. For most of RPCs related to state query, the "latest_state" is recommended.
 
+## RPC method mapping
 
-### RPC method mapping
-
-* eth_protocolVersion
+* eth_protocolVersion  ?
 * eth_gasPrice
 * eth_accounts
 * eth_blockNumber -- epochNumber
@@ -55,19 +57,17 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 * eth_getLogs
 * web3_clientVersion
 * net_version
-
+* web3_sha3  
 
 * eth_getUncleCountByBlockHash  ? 
 * eth_getUncleCountByBlockNumber  ?
 * eth_getUncleByBlockHashAndIndex  ?
 * eth_getUncleByBlockNumberAndIndex  ?
 
-
 * eth_getCompilers  ?
 * eth_compileLLL  ?
 * eth_compileSolidity  ?
 * eth_compileSerpent  ?
-
 
 * eth_newFilter  ?
 * eth_newBlockFilter ?
@@ -76,18 +76,21 @@ Noticed that for performance optimization concern, the lasted mined epochs are n
 * eth_getFilterChanges  ?
 * eth_getFilterLogs  ?
 
-
-* eth_syncing
-* eth_coinbase
-* eth_mining
+* eth_syncing ?
+* eth_mining ?
 * eth_hashrate
 * eth_getWork ?
 * eth_submitWork ?
 * eth_submitHashrate ?
+* eth_coinbase ?
 
+* net_peerCount  ?
+* net_listening  ?
 
-* web3_sha3
-* net_peerCount
-* net_listening
+* db & shh methods ?
 
-db & shh
+## RPC APIs
+
+1. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/
+2. http://cw.hubwiz.com/card/c/parity-rpc-api/
+3. http://cw.hubwiz.com/card/c/ethereum-json-rpc-api/

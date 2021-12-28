@@ -103,8 +103,8 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getBlockNumber(req, res, next) {
-    req.params = ['latest_state'];
     await next();
+    res.result = res.result.blockNumber;
   }
 
   async function call(req, res, next) {

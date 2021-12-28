@@ -11,7 +11,7 @@ module.exports = methodMapMiddleware;
 
 
 const ETH_TO_CFX_METHOD_MAPPER = {
-  eth_blockNumber: 'cfx_epochNumber',
+  eth_blockNumber: 'cfx_getStatus',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',
   eth_sendTransaction: 'cfx_sendTransaction',
   eth_getBalance: 'cfx_getBalance',

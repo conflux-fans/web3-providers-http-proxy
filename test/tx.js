@@ -12,7 +12,7 @@ const {
 
 const txHash = '0x439b6df80114519fd0f201b2da788b07cd8b598a3b38242b0c9e277bd7c99c44';
 const blockHash = '0xaab4388b7416753a052f08976e8444b6bec298d068271873f66a1d19a4ee0705'
-const blockNumber = '0x1032c52'
+const blockNumber = '0x147eaa7'
 
 describe('Transaction', function () {
   describe('getTransactionByHash', function () {

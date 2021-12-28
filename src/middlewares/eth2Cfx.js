@@ -6,7 +6,7 @@ const format = require('../utils/format');
 const { numToHex, delKeys, createAsyncMiddleware } = require('../utils');
 const adaptErrorMsg = require('../utils/adaptErrorMsg')
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
-const { RLP } = require("ethers/lib/utils");
+const { RLP, isHexString } = require("ethers/lib/utils");
 
 const defaultOptions = {
   respAddressBeHex: false,
@@ -109,12 +109,13 @@ function cfx2Eth(options = defaultOptions) {
 
   async function call(req, res, next) {
     format.formatCommonInput(req.params, await getNetworkId());
+    req.params[1] = await adaptStateQueryBlockNumber(req.params[1]);
     await next();
   }
 
   async function estimateGas(req, res, next) {
-
     req.params = format.formatCommonInput(req.params, await getNetworkId());
+    req.params[1] = await adaptStateQueryBlockNumber(req.params[1]);
     await next();
     if (!res.result) return;
     res.result = res.result.gasUsed;
@@ -156,17 +157,8 @@ function cfx2Eth(options = defaultOptions) {
 
   async function getCode(req, res, next) {
     req.params[0] = await formatAddress(req.params[0]);
-    format.formatEpochOfParams(req.params, 1);
-    // console.log("getcode formated params:", req.params)
+    req.params[1] = await adaptStateQueryBlockNumber(req.params[1]);
     await next();
-    // console.log("getcode next response:", res)
-    if (res && res.error) {
-      const { code, message } = res.error;
-      if (code == -32016 || (code === -32602 && message === 'Invalid parameters: address')) {
-        delete res.error;
-        res.result = "0x";
-      }
-    }
   }
 
   async function getLogs(req, res, next) {
@@ -181,8 +173,8 @@ function cfx2Eth(options = defaultOptions) {
 
   async function getStorageAt(req, res, next) {
     req.params[0] = await formatAddress(req.params[0]);
-    req.params[1] = ethers.utils.hexZeroPad(req.params[1], 32);
-    format.formatEpochOfParams(req.params, 2);
+    // req.params[1] = ethers.utils.hexZeroPad(req.params[1], 32);
+    req.params[2] = await adaptStateQueryBlockNumber(req.params[2]);
     await next();
     res.result = res.result || "0x"
   }
@@ -216,10 +208,10 @@ function cfx2Eth(options = defaultOptions) {
     req.params[0] = await formatAddress(req.params[0], respAddressBeHex);
     const isPending = req.params[1] === 'pending';
     if (isPending) {
-      req.method = 'cfx_getAccountPendingInfo';
+      req.method = 'txpool_nextNonce';
       req.params = req.params.slice(0, 1);
     } else {
-      format.formatEpochOfParams(req.params, 1);
+      req.params[1] = await adaptStateQueryBlockNumber(req.params[1]);
     }
     await next();
     if (isPending) {
@@ -305,7 +297,7 @@ function cfx2Eth(options = defaultOptions) {
 
   async function getBalance(req, res, next) {
     req.params[0] = await formatAddress(req.params[0]);
-    format.formatEpochOfParams(req.params, 1);
+    req.params[1] = await adaptStateQueryBlockNumber(req.params[1]);
     await next();
   }
 
@@ -387,9 +379,22 @@ function cfx2Eth(options = defaultOptions) {
     return tag;
   }
 
+  async function adaptStateQueryBlockNumber(numberOrTag) {
+    // map blockNumber to epochNumber
+    if (isHexString(numberOrTag)) { 
+      const block = await cfx.provider.call('cfx_getBlockByBlockNumber', numberOrTag, false);
+      return block.epochNumber;
+    }
+    return format.formatEpoch(numberOrTag);
+  }
+
   async function adaptBlockParentHash(block) {
-    const parentBlockNumber = ethers.BigNumber(block.number).sub(1).toHexString();
-    const parentBlock = await cfx.provider.call('cfx_getBlockByBlockNumber', parentBlockNumber);
+    if (block.number === '0x0') {
+      block.parentHash = null;
+      return;
+    }
+    const parentBlockNumber = ethers.BigNumber.from(block.number).sub(1).toNumber();
+    const parentBlock = await cfx.provider.call('cfx_getBlockByBlockNumber', numToHex(parentBlockNumber), false);
     if (parentBlock) {
       block.parentHash = parentBlock.hash;
     }

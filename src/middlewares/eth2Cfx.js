@@ -195,10 +195,11 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getTransactionByBlockNumberAndIndex(req, res, next) {
+    req.params[0] = await adaptBlockNumberTag(req.params[0]);
     const index = Number(req.params[1]);
     req.params[1] = true;
     await next();
-    if (!res.result) return;
+    if (!res.result || !res.result.transactions[index]) return;
     res.result = res.result.transactions[index];
     await _formatTxAndFeedBlockNumber(res.result);
   }

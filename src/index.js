@@ -3,11 +3,11 @@ const eth2Cfx = require('./middlewares');
 const sendJSONRPC = require('./middlewares/send');
 const logger = require('./middlewares/logger')
 
-
 const defaultOption = {
   respAddressBeHex: false,
   respTxBeEip155: false
 }
+
 class JsonRpcProxy {
 
   constructor(url, options = defaultOption) {

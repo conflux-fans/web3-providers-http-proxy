@@ -1,6 +1,6 @@
 # web3-provider-proxy
 
-An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).
+An provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).
 
 ## How to use
 
@@ -8,7 +8,6 @@ Install through npm
 
 ```sh
 $ npm install web3-providers-http-proxy
-//
 ```
 
 ## JsonRpcProxy

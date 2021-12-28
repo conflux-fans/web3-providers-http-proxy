@@ -89,7 +89,3 @@ function formatToNumberHex(buf) {
 }
 
 module.exports = ethRawTxConverter;
-
-
-// let decoded = decodeCFXTXWithRlp('0xf877f380844190ab00825208940d2418c13e6d48beee26f2cf42d67dfe0b0613de8088ffffffffffffffff88ffffffffffffffff028001a094c274e6fa1dc73ce514c3c82c98890c616ce5386892029a3631dd5d12539aa2a054bf5caeefaa3e0c91a336e55b77f9ddd2e74e5ddaac1751fecc80cb67c0fc27');
-// console.log(decoded);

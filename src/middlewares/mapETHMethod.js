@@ -23,7 +23,7 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   eth_getCode: 'cfx_getCode',
   eth_getStorageAt: 'cfx_getStorageAt',
   eth_getBlockByHash: 'cfx_getBlockByHash',
-  eth_getBlockByNumber: 'cfx_getBlockByEpochNumber',
+  eth_getBlockByNumber: 'cfx_getBlockByBlockNumber',
   eth_getTransactionByHash: 'cfx_getTransactionByHash',
   web3_clientVersion: 'cfx_clientVersion',
   eth_chainId: 'cfx_getStatus',

@@ -133,7 +133,7 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getBlockByNumber(req, res, next) {
-    format.formatEpochOfParams(req.params, 0);
+    req.params[0] = await adaptBlockNumberTag(req.params[0]);
     await next();
     if (!res.result) return;
     format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
@@ -148,7 +148,7 @@ function cfx2Eth(options = defaultOptions) {
   async function getBlockTransactionCountByNumber(req, res, next) {
     await next();
     if (!res.result) return;
-    res.result = util.numToHex(res.result.transactions.length);
+    res.result = numToHex(res.result.transactions.length);
   }
 
   async function getCode(req, res, next) {
@@ -367,6 +367,20 @@ function cfx2Eth(options = defaultOptions) {
 
   async function formatAddress(address, toHex) {
     return format.formatAddress(address, await getNetworkId(), toHex)
+  }
+
+  async function adaptBlockNumberTag (tag) {
+    if (tag === 'latest') {
+      const {blockNumber} = await cfx.provider.call('cfx_getStatus');
+      return blockNumber;
+    }
+    if (tag === 'pending') {
+      throw new Error('pending tag is not supported');
+    }
+    if (tag === 'earliest') {
+      return '0x0';
+    }
+    return tag;
   }
 
   function isCfxTransaction(rawTransaction) {

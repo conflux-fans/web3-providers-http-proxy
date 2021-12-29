@@ -1,6 +1,6 @@
 const { JsonRpcEngine } = require("json-rpc-engine");
 const eth2Cfx = require('./eth2Cfx');
-const methodMapMiddleware = require('./mapETHMethod');
+const methodMapMiddleware = require('./eth2CfxMethodMapper');
 
 module.exports = function (options) {
   const engine = new JsonRpcEngine();

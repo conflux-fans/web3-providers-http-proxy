@@ -1,15 +1,5 @@
 const { createAsyncMiddleware } = require('json-rpc-engine');
 
-function methodMapMiddleware() {
-  return createAsyncMiddleware(async function adaptMethod(req, res, next) {
-    req.method = _mapETHMethod(req.method);
-    await next();
-  });
-}
-
-module.exports = methodMapMiddleware;
-
-
 const ETH_TO_CFX_METHOD_MAPPER = {
   eth_blockNumber: 'cfx_getStatus',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',
@@ -46,6 +36,15 @@ const ETH_TO_CFX_METHOD_MAPPER = {
 function _mapETHMethod(method) {
   return ETH_TO_CFX_METHOD_MAPPER[method] || method;
 }
+
+function methodMapMiddleware() {
+  return createAsyncMiddleware(async (req, res, next) => {
+    req.method = _mapETHMethod(req.method);
+    await next();
+  });
+}
+
+module.exports = methodMapMiddleware;
 
 /**
  * CORE methods

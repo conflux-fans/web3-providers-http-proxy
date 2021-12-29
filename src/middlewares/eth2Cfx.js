@@ -53,11 +53,6 @@ function cfx2Eth(options = defaultOptions) {
     // 'eth_signTransaction': createAsyncMiddleware(adaptMethod),
   });
 
-  // async function adaptMethod(req, res, next) {
-  //   req.method = defaultMethodAdaptor(req.method);
-  //   await next();
-  // }
-
   async function getNetworkId() {
     networkId = networkId || (await cfx.getStatus()).networkId
     return networkId
@@ -221,9 +216,6 @@ function cfx2Eth(options = defaultOptions) {
       req.params[1] = await adaptStateQueryBlockNumber(req.params[1]);
     }
     await next();
-    if (isPending) {
-      res.result = res.result.localNonce;
-    }
   }
 
   async function getTransactionReceipt(req, res, next) {

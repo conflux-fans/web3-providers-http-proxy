@@ -3,7 +3,7 @@ const assert = require('chai').assert;
 const { address } = require("js-conflux-sdk")
 const { unfold } = require('../src/utils');
 
-const keys = [
+const txKeys = [
     'blockHash',
     'blockNumber',
     'from',
@@ -33,19 +33,45 @@ const receiptKeys = [
     'logsBloom',
 ];
 
+const blockKeys = [
+  'number',
+  'hash',
+  'parentHash',
+  'nonce',
+  'sha3Uncles',
+  'logsBloom',
+  'transactionsRoot',
+  'stateRoot',
+  'receiptsRoot',
+  'miner',
+  'difficulty',
+  'totalDifficulty',
+  'extraData',
+  'size',
+  'gasLimit',
+  'gasUsed',
+  'transactions',
+  'uncles',
+];
+
 function isHex(val) { assert(utils.isHex(val), `expect hex, actual ${val}`) }
 function isHexOrNull(val) { assert(utils.isHexOrNull(val), `expect hex or null, actual ${val}`) }
 function isValidCfxAddress(val) { assert(address.isValidCfxAddress(val), `expect cfx address, actual ${val}`) }
 function isValidCfxAddressOrNull(val) { assert(val === null || address.isValidCfxAddress(val), `expect cfx address, actual ${val}`) }
 function isContainsAllKeys(val, keys) { assert.containsAllKeys(val, keys, `should contrain all keys, actual ${val}`) }
 
+function isBlockWithHexAddress(val) {
+  isContainsAllKeys(val, blockKeys);
+  isHex(val.miner)
+}
+
 function isTxWithCfxAddress(val) {
-    isContainsAllKeys(val, keys);
+    isContainsAllKeys(val, txKeys);
     isValidCfxAddress(val.from)
     isValidCfxAddressOrNull(val.to)
 }
 function isTxWithHexAddress(val) {
-    isContainsAllKeys(val, keys);
+    isContainsAllKeys(val, txKeys);
     isHex(val.from)
     isHexOrNull(val.to)
 }
@@ -93,4 +119,6 @@ module.exports = {
     isCFXSign,
     isErrorUndefined,
     inArray,
+    isBlockWithHexAddress,
+    blockKeys,
 };

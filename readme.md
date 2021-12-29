@@ -39,7 +39,7 @@ See tests for usage details.
 
 ```js
 const ETH_TO_CFX_METHOD_MAPPER = {
-  eth_blockNumber: 'cfx_getStatus',
+  eth_blockNumber: 'cfx_epochNumber',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',
   eth_sendTransaction: 'cfx_sendTransaction',
   eth_getBalance: 'cfx_getBalance',
@@ -74,6 +74,8 @@ const ETH_TO_CFX_METHOD_MAPPER = {
 
 ## References
 
-1. [Conflux RPC doc](https://developer.conflux-chain.org/docs/conflux-doc/docs/json_rpc)
+1. [Conflux RPC doc](https://developer.confluxnetwork.org/conflux-doc/docs/json_rpc)
 2. [Ethereum RPC doc](https://eth.wiki/json-rpc/API)
 3. [Ethereum open-RPC](https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=false&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false)
+4. [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193#provider-errors)
+5. [eth-provider](https://github.com/floating/eth-provider)

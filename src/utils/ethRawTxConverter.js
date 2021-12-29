@@ -1,28 +1,14 @@
-const ETHTXDecoder = require('ethereum-tx-decoder');
-const RLP = require('rlp');
+// const ETHTXDecoder = require('ethereum-tx-decoder');
+// const RLP = require('rlp');
 const { ethers } = require("ethers");
-const { format, Transaction } = require('js-conflux-sdk');
+const { 
+  // format, 
+  Transaction 
+} = require('js-conflux-sdk');
 const MAX_UINT64 = '0xffffffffffffffff';
 const VALID_ADDRESS_PREFIX = ['0x0', '0x1', '0x8'];
  
-function decodeWithEthers(rawTx) {
-  const decoded = ethers.utils.parseTransaction(rawTx);
-  return {
-    ...decoded,
-    gasPrice: decoded.gasPrice.toHexString(),
-    gas: decoded.gasLimit.toHexString(),
-    value: decoded.value.toHexString(),
-    chainId: decoded.chainId,
-    // nonce: decoded.nonce,
-    // to: decoded.to,
-    // data: decoded.data,
-    // v: decoded.v,
-    // r: decoded.r,
-    // s: decoded.s,
-  };
-}
-
-function decodeWithTxDecoder(rawTx) {
+/* function decodeWithTxDecoder(rawTx) {
   return ETHTXDecoder.decodeTx(rawTx);
 }
 
@@ -59,6 +45,29 @@ function decodeCFXTXWithRlp(tx) {
     chainId: format.hex(chainId),
     epochHeight: format.hex(epochHeight)
   };
+} 
+
+function formatToNumberHex(buf) {
+  return buf.lengh ? format.hex(buf) : '0x0'
+}
+
+*/
+
+function decodeWithEthers(rawTx) {
+  const decoded = ethers.utils.parseTransaction(rawTx);
+  return {
+    ...decoded,
+    gasPrice: decoded.gasPrice.toHexString(),
+    gas: decoded.gasLimit.toHexString(),
+    value: decoded.value.toHexString(),
+    // chainId: decoded.chainId,
+    // nonce: decoded.nonce,
+    // to: decoded.to,
+    // data: decoded.data,
+    // v: decoded.v,
+    // r: decoded.r,
+    // s: decoded.s,
+  };
 }
 
 function ethRawTxConverter(rawTx) {
@@ -82,10 +91,6 @@ function ethRawTxConverter(rawTx) {
     info: txInfo,
     rawTx: cfxTx.serialize()
   };
-}
-
-function formatToNumberHex(buf) {
-  return buf.lengh ? format.hex(buf) : '0x0'
 }
 
 module.exports = ethRawTxConverter;

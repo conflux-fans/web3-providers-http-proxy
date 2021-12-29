@@ -55,6 +55,10 @@ function cfx2Eth(options = defaultOptions) {
 
   async function getNetworkId() {
     networkId = networkId || (await cfx.getStatus()).networkId
+    if (!cfx.networkId) {
+      cfx.networkId = networkId;
+      cfx.wallet.setNetworkId(this.networkId);
+    }
     return networkId
   }
 
@@ -66,6 +70,7 @@ function cfx2Eth(options = defaultOptions) {
       const gasPrice = ethers.BigNumber.from(tx.gasPrice);
       const value = ethers.BigNumber.from(tx.value);
       const required = gas.mul(gasPrice).add(value);
+      await getNetworkId();
       const balance = await cfx.getBalance(tx.from);
       if (ethers.BigNumber.from(balance).lt(required)) {
         throw new Error('insufficient funds for gas * price + value');
@@ -98,8 +103,10 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getBlockNumber(req, res, next) {
+    req.params[0] = 'latest_state';
     await next();
-    res.result = res.result.blockNumber;
+    const block = await cfx.getBlockByEpochNumber(res.result);
+    res.result = numToHex(block.blockNumber);
   }
 
   async function call(req, res, next) {
@@ -146,6 +153,7 @@ function cfx2Eth(options = defaultOptions) {
     if (!requestTxDetail) {
       block.transactions = block.transactions.map(tx => tx.hash);
     }
+
     format.formatBlock(block, await getNetworkId(), respAddressBeHex);
     await adaptBlockParentHash(block);
     res.result = block;
@@ -176,7 +184,7 @@ function cfx2Eth(options = defaultOptions) {
 
   async function getLogs(req, res, next) {
     if (req.params.length > 0) {
-      _formatFilter(req.params[0]);
+      req.params[0] = await _formatFilter(req.params[0]);
     }
     await next();
     if (!res.result) return;
@@ -225,7 +233,7 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getTransactionCount(req, res, next) {
-    req.params[0] = await formatAddress(req.params[0], respAddressBeHex);
+    req.params[0] = await formatAddress(req.params[0], false);
     const isPending = req.params[1] === 'pending';
     if (isPending) {
       req.method = 'txpool_nextNonce';
@@ -356,7 +364,6 @@ function cfx2Eth(options = defaultOptions) {
 
   async function _formatFilter(filter) {
     let { blockHash, blockHashes, address } = filter
-
     filter.fromBlock = await adaptBlockNumberTag(filter.fromBlock);
     filter.toBlock = await adaptBlockNumberTag(filter.toBlock);
 
@@ -369,9 +376,9 @@ function cfx2Eth(options = defaultOptions) {
     }
     if (address) {
       if (_.isArray(address)) {
-        filter.address = await Promise.all(address.map(formatAddress));
+        filter.address = await Promise.all(address.map(_addr => formatAddress(_addr, false)));
       } else {
-        filter.address = await formatAddress(address);
+        filter.address = await formatAddress(address, false);
       }
     }
 
@@ -385,13 +392,18 @@ function cfx2Eth(options = defaultOptions) {
 
   async function adaptBlockNumberTag (tag) {
     if (tag === 'latest' || tag === 'pending') {
-      const { blockNumber } = await cfx.provider.call('cfx_getStatus');
-      return blockNumber;
+      return await getLatestBlockNumber();
     }
     if (tag === 'earliest') {
       return '0x0';
     }
     return tag;
+  }
+
+  async function getLatestBlockNumber() {
+    const epochNumber = await cfx.provider.call('cfx_epochNumber');
+    const block = await cfx.getBlockByEpochNumber(epochNumber);
+    return numToHex(block.blockNumber);
   }
 
   async function adaptStateQueryBlockNumber(numberOrTag) {

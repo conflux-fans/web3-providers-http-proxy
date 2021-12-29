@@ -9,7 +9,7 @@ const EPOCH_MAP = {
 };
 
 function formatEpoch(tag) {
-  if (!tag) return tag;
+  if (!tag || tag === 'latest_state') return tag;
   return EPOCH_MAP[tag] || numToHex(tag);
 }
 

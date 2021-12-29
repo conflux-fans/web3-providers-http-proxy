@@ -1,7 +1,8 @@
+const debug = require('debug')('eth2CfxMethodMapper')
 const { createAsyncMiddleware } = require('json-rpc-engine');
 
 const ETH_TO_CFX_METHOD_MAPPER = {
-  eth_blockNumber: 'cfx_getStatus',
+  eth_blockNumber: 'cfx_epochNumber',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',
   eth_sendTransaction: 'cfx_sendTransaction',
   eth_getBalance: 'cfx_getBalance',
@@ -39,7 +40,9 @@ function _mapETHMethod(method) {
 
 function methodMapMiddleware() {
   return createAsyncMiddleware(async (req, res, next) => {
+    const { method } = req;
     req.method = _mapETHMethod(req.method);
+    debug(`map method ${method} to ${req.method}`);
     await next();
   });
 }

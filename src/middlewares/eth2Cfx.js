@@ -123,31 +123,49 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getBlockByHash(req, res, next) {
+    const requestTxDetail = req.params[1];
+    req.params[1] = true;
     await next();
     if (!res.result) return;
-    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
-    await adaptBlockParentHash(res.result);
+    const block = filterBlockTxs(res.result);
+    if (!requestTxDetail) {
+      block.transactions = block.transactions.map(tx => tx.hash);
+    }
+    format.formatBlock(block, await getNetworkId(), respAddressBeHex);
+    await adaptBlockParentHash(block);
+    res.result = block;
   }
 
   async function getBlockByNumber(req, res, next) {
     req.params[0] = await adaptBlockNumberTag(req.params[0]);
+    const requestTxDetail = req.params[1];
+    req.params[1] = true;  // to filter transaction
     await next();
     if (!res.result) return;
-    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
-    await adaptBlockParentHash(res.result);
+    const block = filterBlockTxs(res.result);
+    if (!requestTxDetail) {
+      block.transactions = block.transactions.map(tx => tx.hash);
+    }
+    format.formatBlock(block, await getNetworkId(), respAddressBeHex);
+    await adaptBlockParentHash(block);
+    res.result = block;
   }
 
   async function getBlockTransactionCountByHash(req, res, next) {
+    req.params[1] = true;
     await next();
     if (!res.result) return;
-    res.result = numToHex(res.result.transactions.length);
+    const block = filterBlockTxs(res.result);
+    res.result = numToHex(block.transactions.length);
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
     req.params[0] = await adaptBlockNumberTag(req.params[0]);
+    req.params[1] = true;
     await next();
     if (!res.result) return;
-    res.result = numToHex(res.result.transactions.length);
+    const block = filterBlockTxs(res.result);
+    res.result = numToHex(block.transactions.length);
   }
 
   async function getCode(req, res, next) {
@@ -395,6 +413,13 @@ function cfx2Eth(options = defaultOptions) {
     if (parentBlock) {
       block.parentHash = parentBlock.hash;
     }
+  }
+
+  // filter the transactions that are not executed by this block
+  function filterBlockTxs(block) {
+    if (!block.transactions) return block;
+    block.transactions = block.transactions.filter(tx => tx.blockHash === block.hash);
+    return block;
   }
 
   function isCfxTransaction(rawTransaction) {

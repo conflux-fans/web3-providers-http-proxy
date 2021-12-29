@@ -2,7 +2,7 @@
 
 ## v-next
 
-1. Adapt `getBlockByNumber` to include all tx from one Epoch
+1. Use conflux's `blockNumber` to adapt ethereum `blockNumber`
 
 ## v0.5.0
 

@@ -333,14 +333,14 @@ function cfx2Eth(options = defaultOptions) {
     format.formatTransaction(tx, await getNetworkId(), respAddressBeHex, respTxBeEip155);
     if (!tx.blockHash) return;
     const block = await cfx.getBlockByHash(tx.blockHash);
-    tx.blockNumber = numToHex(block.epochNumber);
+    tx.blockNumber = numToHex(block.blockNumber);
   }
 
   async function _formatFilter(filter) {
-    let { fromBlock, toBlock, blockHash, blockHashes, address } = filter
+    let { blockHash, blockHashes, address } = filter
 
-    filter.fromEpoch = format.formatEpoch(fromBlock);
-    filter.toEpoch = format.formatEpoch(toBlock);
+    filter.fromBlock = await adaptBlockNumberTag(filter.fromBlock);
+    filter.toBlock = await adaptBlockNumberTag(filter.toBlock);
 
     if (blockHash) {
       if (_.isArray(blockHashes)) {
@@ -357,7 +357,7 @@ function cfx2Eth(options = defaultOptions) {
       }
     }
 
-    delKeys(filter, ["fromBlock", "toBlock", "blockHash"])
+    delKeys(filter, ["blockHash"])
     return filter;
   }
 
@@ -366,12 +366,9 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function adaptBlockNumberTag (tag) {
-    if (tag === 'latest') {
-      const {blockNumber} = await cfx.provider.call('cfx_getStatus');
+    if (tag === 'latest' || tag === 'pending') {
+      const { blockNumber } = await cfx.provider.call('cfx_getStatus');
       return blockNumber;
-    }
-    if (tag === 'pending') {
-      throw new Error('pending tag is not supported');
     }
     if (tag === 'earliest') {
       return '0x0';

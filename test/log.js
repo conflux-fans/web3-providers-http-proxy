@@ -19,11 +19,11 @@ describe('eth_getLogs', function () {
     it('should return cfx address', async function () {
       let logFilter = {
         // blockHashes: ['0xc880122fc1e68589087320e1e7e40198c8bb2f95d3730797c3f20f7958efc7cc'],
-        fromBlock: 39782984,
-        toBlock: 39783084,
+        // fromBlock: 39782984,
+        // toBlock: 39783084,
 
-        // fromBlock: 0x51a5f,
-        // toBlock: 0x51a60,
+        fromBlock: '0x2f4f366',
+        toBlock: '0x2f4f3dc',
       };
       let { result } = await asyncSend('eth_getLogs', logFilter);
       assert.isArray(result);
@@ -35,11 +35,11 @@ describe('eth_getLogs', function () {
     it('should return hex address', async function () {
       let logFilter = {
         // blockHashes: ['0xc880122fc1e68589087320e1e7e40198c8bb2f95d3730797c3f20f7958efc7cc'],
-        fromBlock: 39782984,
-        toBlock: 39783084,
+        // fromBlock: 39782984,
+        // toBlock: 39783084,
 
-        // fromBlock: 0x51a5f,
-        // toBlock: 0x51a60,
+        fromBlock: '0x2f4f366',
+        toBlock: '0x2f4f3dc',
       };
       let { result } = await asyncSendWithHexAddrRes('eth_getLogs', logFilter);
       assert.isArray(result);

@@ -167,8 +167,15 @@ function cfx2Eth(options = defaultOptions) {
     }
     await next();
     if (!res.result) return;
-    const networkId = await getNetworkId()
-    res.result.forEach(l => format.formatLog(l, networkId, respAddressBeHex));
+    const networkId = await getNetworkId();
+    
+    for(let i in res.result) {
+      let log = res.result[i];
+      format.formatLog(log, networkId, respAddressBeHex);
+      const block = await cfx.getBlockByHash(log.blockHash);
+      log.blockNumber = numToHex(block.blockNumber);
+      res.result[i] = log;
+    }
   }
 
   async function getStorageAt(req, res, next) {
@@ -226,9 +233,10 @@ function cfx2Eth(options = defaultOptions) {
     txReceipt.contractCreated = await formatAddress(txReceipt.contractCreated, respAddressBeHex);
     txReceipt.from = await formatAddress(txReceipt.from, respAddressBeHex);
     txReceipt.to = await formatAddress(txReceipt.to, respAddressBeHex);
+    const block = await cfx.getBlockByHash(txReceipt.blockHash);
+    txReceipt.blockNumber = numToHex(block.blockNumber);
     txReceipt.gasUsed = txReceipt.gasFee;  // NOTE: use gasFee as gasUsed
     txReceipt.contractAddress = txReceipt.contractCreated;
-    txReceipt.blockNumber = txReceipt.epochNumber;
     txReceipt.transactionIndex = txReceipt.index;
     txReceipt.status = Number.parseInt(txReceipt.outcomeStatus)
       ? "0x0"

@@ -220,7 +220,6 @@ function formatAddress(address, networkId, isToHex) {
   return isToHex ? formatHexAddress(address) : formatCip37Address(address, networkId)
 }
 
-
 module.exports = {
   formatCommonInput,
   formatTransaction,

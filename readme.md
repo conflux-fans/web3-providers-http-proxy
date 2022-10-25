@@ -8,7 +8,6 @@ Install through npm
 
 ```sh
 $ npm install web3-providers-http-proxy
-//
 ```
 
 ## JsonRpcProxy

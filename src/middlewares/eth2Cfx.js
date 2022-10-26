@@ -109,6 +109,7 @@ function cfx2Eth(options = defaultOptions) {
 
   async function call(req, res, next) {
     await formatEpochOfParams(req.params, 1);
+    
     format.formatCommonInput(req.params, await getNetworkId());
     await next();
   }
@@ -161,7 +162,7 @@ function cfx2Eth(options = defaultOptions) {
     let epochNumber = res.result.epochNumber;
     let pivotBlock = await _getEpochAsBlock(epochNumber);
     res.result = pivotBlock;
-    res.result = util.numToHex(res.result.transactions.length);
+    res.result = numToHex(res.result.transactions.length);
   }
 
   async function getCode(req, res, next) {
@@ -402,12 +403,12 @@ function cfx2Eth(options = defaultOptions) {
       }
     }
     
-    format.formatEpochOfParams(req.params, 1);
+    format.formatEpochOfParams(params, 1);
   }
 
   // NOTE: gasLimit, gasUsed, size, transactionsRoot and other fields is not adapted, direct use the pivot block
   async function _getEpochAsBlock(epochNumber, includeTx = false) {
-    let blockHashes = await cfx.getBlocksByEpoch(epochNumber);
+    let blockHashes = await cfx.cfx.getBlocksByEpoch(epochNumber);
     if (blockHashes.length === 0) return null;
     let txes = [];
     let blocks = [];

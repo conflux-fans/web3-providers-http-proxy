@@ -105,10 +105,11 @@ function formatTransaction(tx, networkId, isAddrToHex, isEIP155) {
   if (isEIP155)
     tx.v = numToHex(Number(tx.v) + Number(tx.chainId) * 2 + 35);
 
+  // TODO: value, gasPrice maybe is a very big number, need use bignumer to convert
   const hexNumKeys = [
     'nonce', 
-    'value', 
-    'gasPrice', 
+    'value',
+    'gasPrice',
     'gas', 
     'storageLimit', 
     'epochHeight', 

@@ -133,8 +133,8 @@ function cfx2Eth(options = defaultOptions) {
     if (!res.result) return;
     let epochNumber = res.result.epochNumber;
     let pivotBlock = await _getEpochAsBlock(epochNumber, req.params[1]);
-    res.result = pivotBlock;
-    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
+    res.result.transactions = pivotBlock.transactions;
+    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex, respTxBeEip155);
   }
 
   async function getBlockByNumber(req, res, next) {
@@ -143,11 +143,12 @@ function cfx2Eth(options = defaultOptions) {
     if (!res.result) return;
     let epochNumber = res.result.epochNumber;
     let pivotBlock = await _getEpochAsBlock(epochNumber, req.params[1]);
-    res.result = pivotBlock;
-    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
+    res.result.transactions = pivotBlock.transactions;
+    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex, respTxBeEip155);
   }
 
   async function getBlockTransactionCountByHash(req, res, next) {
+    req.params[1] = false;
     await next();
     if (!res.result) return;
     let epochNumber = res.result.epochNumber;
@@ -157,6 +158,7 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
+    req.params[1] = false;
     await next();
     if (!res.result) return;
     let epochNumber = res.result.epochNumber;

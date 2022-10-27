@@ -15,10 +15,9 @@ $ npm install web3-providers-http-proxy
 * support **websocket** and **http** url
 
 ```js
-const { JsonRpcProxy } = require('web3-provider-http-proxy');
+const JsonRpcProxy = require('web3-providers-http-proxy');
 const URL = 'https://test.confluxrpc.com';
-const networkId = 1;
-const proxy = new JsonRpcProxy(URL, networkId);
+const proxy = new JsonRpcProxy(URL);
 // then use proxy as an provider
 ```
 

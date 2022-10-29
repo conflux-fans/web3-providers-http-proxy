@@ -69,6 +69,7 @@ function formatBlock(block, networkId, isAddrToHex, isEip155) {
     typeof block.transactions[0] === "object"
   ) {
     for (let i in block.transactions) {
+      block.transactions[i].blockHash = block.hash;
       formatTransaction(block.transactions[i], networkId, isAddrToHex, isEip155);
     }
   }

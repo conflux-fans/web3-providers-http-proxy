@@ -4,7 +4,7 @@ const _ = require('lodash');
 const { ethers } = require('ethers');
 const { RLP } = require("ethers/lib/utils");
 const format = require('../utils/format');
-const { numToHex, delKeys, createAsyncMiddleware } = require('../utils');
+const { numToHex, delKeys, createAsyncMiddleware, isHex } = require('../utils');
 const adaptErrorMsg = require('../utils/adaptErrorMsg')
 const ethRawTxConverter = require('../utils/ethRawTxConverter');
 
@@ -109,8 +109,11 @@ function cfx2Eth(options = defaultOptions) {
 
   async function call(req, res, next) {
     await formatEpochOfParams(req.params, 1);
-    
     format.formatCommonInput(req.params, await getNetworkId());
+    // set epochHeight of call tx
+    if (req.params[1] !== undefined && isHex(req.params[1])) {
+      req.params[0].epochHeight = req.params[1];
+    }
     await next();
   }
 
@@ -246,6 +249,8 @@ function cfx2Eth(options = defaultOptions) {
     await next();
     if (!res.result) return;
     let txReceipt = res.result;
+    let block = await cfx.getBlockByEpochNumber(txReceipt.epochNumber);
+    txReceipt.blockHash = block.hash;
     txReceipt.contractCreated = await formatAddress(txReceipt.contractCreated, respAddressBeHex);
     txReceipt.from = await formatAddress(txReceipt.from, respAddressBeHex);
     txReceipt.to = await formatAddress(txReceipt.to, respAddressBeHex);
@@ -405,7 +410,7 @@ function cfx2Eth(options = defaultOptions) {
       }
     }
     
-    format.formatEpochOfParams(params, 1);
+    format.formatEpochOfParams(params, index);
   }
 
   // NOTE: gasLimit, gasUsed, size, transactionsRoot and other fields is not adapted, direct use the pivot block

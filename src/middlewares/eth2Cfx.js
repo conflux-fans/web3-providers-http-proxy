@@ -6,7 +6,6 @@ const { RLP } = require("ethers/lib/utils");
 const format = require('../utils/format');
 const { numToHex, delKeys, createAsyncMiddleware, isHex } = require('../utils');
 const adaptErrorMsg = require('../utils/adaptErrorMsg')
-const ethRawTxConverter = require('../utils/ethRawTxConverter');
 
 const defaultOptions = {
   respAddressBeHex: false,
@@ -64,27 +63,6 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function sendRawTransaction(req, res, next) {
-    if (!isCfxTransaction(req.params[0])) {
-      const { info: tx, rawTx } = ethRawTxConverter(req.params[0]);
-      // check balance
-      const gas = ethers.BigNumber.from(tx.gas);
-      const gasPrice = ethers.BigNumber.from(tx.gasPrice);
-      const value = ethers.BigNumber.from(tx.value);
-      const required = gas.mul(gasPrice).add(value);
-      const balance = await cfx.getBalance(tx.from);
-      if (ethers.BigNumber.from(balance).lt(required)) {
-        throw new Error('insufficient funds for gas * price + value');
-      }
-      // check target contract exist
-      if (tx.to && tx.to.startsWith('0x8')) {
-        const code = await cfx.getCode(tx.to);
-        if (code === '0x') {
-          throw new Error('contract not exist');
-        }
-      }
-      req.params[0] = rawTx;
-    }
-
     await next();
     // adapt error message
     if (res._error) {

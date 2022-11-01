@@ -1,6 +1,7 @@
 # web3-provider-proxy
 
-An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).
+An http provider port from web3, which can proxy eth RPC requests to [Conflux Core RPC service](https://developer.conflux-chain.org/docs/conflux-doc/docs/json_rpc).
+This package use [json-rpc-engine](https://www.npmjs.com/package/json-rpc-engine) to convert RPC requests and responses.
 
 ## How to use
 

@@ -1,6 +1,6 @@
 {
   "name": "web3-providers-http-proxy",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "description": "An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).",
   "main": "./src/index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "js-conflux-sdk": "^2.1.8",
     "json-rpc-engine": "^6.1.0",
     "lodash": "^4.17.21",
+    "jsbi": "^3.1.4",
     "rlp": "^2.2.6"
   },
   "devDependencies": {
@@ -31,7 +32,6 @@
     "eslint": "^7.32.0",
     "exorcist": "^2.0.0",
     "fs-extra": "^9.1.0",
-    "jsbi": "^3.1.4",
     "minify-stream": "^2.1.0",
     "mocha": "^10.1.0",
     "mold-source-map": "^0.4.0",

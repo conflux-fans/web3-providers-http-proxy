@@ -1,8 +1,10 @@
 # CHANGELOG
 
-## v-next
+## v0.7.x
 
-1. Adapt `getBlockByNumber` to include all tx from one Epoch
+1. Adapt block related methods to include all tx from one Epoch
+2. Support EIP-1898
+3. Pass through `eth_sendRawTransaction` params
 
 ## v0.5.0
 

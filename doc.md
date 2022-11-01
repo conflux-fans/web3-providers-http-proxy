@@ -1,18 +1,5 @@
 如何使用 Conflux RPC-bridge 服务
 ===
-Conflux 通过 [CIP-72](https://github.com/Conflux-Chain/CIPs/blob/master/CIPs/cip-72.md) 引入了对以太坊格式交易的支持。意味着以太坊 SDK，工具，甚至钱包可以直接同 Conflux 交互，这不仅可以降低用户的使用成本，还可以大大降低 Dapp 的开发成本，从而大大扩大 Conflux 开发生态。
-
-## CIP-72 状态
-CIP-72 的 PR 已经被 merge 到了 master 代码中，将会在 Conflux 下一次的 hardfork 后生效（预估在2021.9月）。如果开发者想体验此功能可自行 clone `conflux-rust` 代码并编译节点程序，然后启动一个但节点开发网络即可体验。
-
-## CIP-72 如何使用
-Conflux 的交易格式同以太坊有很大区别，不仅多了 `storageLimit`，`epochHeight` 两个字段，RLP 编码格式也不尽相同，Conflux 编码格式为: `[[nonce, gasPrice, gas, to, value, storageLimit, epochHeight, chainId, data], v, r, s]`。而目前以太坊主流交易格式为 [EIP-155](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md) 所定义的 `(nonce, gasPrice, gas, to, value, data, chainId, 0, 0)` 并对签名的 v 做了特殊处理(`{0,1} + CHAIN_ID * 2 + 35`)。
-
-为了尽量减少对 Conflux protocol 的影响，CIP-72并没有引入新格式的交易，而是增加了一种验签方式。当交易的 epochHeight 为 `u64::MAX` 时，将会采用以太坊的交易格式生成 message hash 并对签名进行验证。
-
-所以如果想直接使用以太坊工具同 Conflux 网络进行交互还需要一个 bridge service 来做交易格式的转换: 将以太坊格式的交易转换为 Conflux 格式的交易，并补充上 `storageLimit`, `epochHeight` 字段。
-
-注意：CIP-72 仅支持 `EIP-155` 格式的交易，EIP-155之前格式的交易（不包含chainId）不被支持，目前也没有支持 EIP-1559 格式交易的计划。
 
 ## RPC-bridge
 Conflux 社区开发了一个 RPC bridge 服务，能够将 Conflux 的 RPC 适配成以太坊的 RPC。意味着可以直接将此 RPC 配置到以太坊钱包，SDK，工具中，并同 Conflux 网络进行交互。

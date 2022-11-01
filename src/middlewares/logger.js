@@ -1,6 +1,6 @@
 const { createAsyncMiddleware } = require("json-rpc-engine");
 const { createDebug } = require("../utils")
-const debug = createDebug("log")
+const debug = createDebug("eth2cfx")
 
 module.exports = createAsyncMiddleware(async function (req, res, next) {
     debug("pre_send %O", req)

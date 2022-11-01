@@ -1,6 +1,7 @@
 # web3-provider-proxy
 
-An http provider port from web3, which can proxy eth rpc request to [conflux](https://confluxnetwork.org/).
+An http provider port from web3, which can proxy eth RPC requests to [Conflux Core RPC service](https://developer.conflux-chain.org/docs/conflux-doc/docs/json_rpc).
+This package use [json-rpc-engine](https://www.npmjs.com/package/json-rpc-engine) to convert RPC requests and responses.
 
 ## How to use
 
@@ -8,7 +9,6 @@ Install through npm
 
 ```sh
 $ npm install web3-providers-http-proxy
-//
 ```
 
 ## JsonRpcProxy
@@ -16,10 +16,9 @@ $ npm install web3-providers-http-proxy
 * support **websocket** and **http** url
 
 ```js
-const { JsonRpcProxy } = require('web3-provider-http-proxy');
+const JsonRpcProxy = require('web3-providers-http-proxy');
 const URL = 'https://test.confluxrpc.com';
-const networkId = 1;
-const proxy = new JsonRpcProxy(URL, networkId);
+const proxy = new JsonRpcProxy(URL);
 // then use proxy as an provider
 ```
 

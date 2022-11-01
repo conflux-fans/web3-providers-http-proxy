@@ -8,6 +8,8 @@ const EPOCH_MAP = {
   pending: "latest_state"  // TODO there is no correct 'pending' tag in conflux
 };
 
+const EMPTY_LOG_BLOOM = '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
 function formatEpoch(tag) {
   if (!tag) return tag;
   return EPOCH_MAP[tag] || numToHex(tag);
@@ -44,19 +46,31 @@ function formatBlock(block, networkId, isAddrToHex, isEip155) {
   block.number = block.epochNumber;
   block.stateRoot = block.deferredStateRoot;
   block.receiptsRoot = block.deferredReceiptsRoot;
-  block.logsBloom = block.deferredLogsBloomHash;  // logsBloom?
+  block.logsBloom = EMPTY_LOG_BLOOM // block.deferredLogsBloomHash;  // logsBloom?
   block.uncles = []; // No uncles in conflux
   block.miner = formatAddress(block.miner, networkId, isAddrToHex);
   block.totalDifficulty = block.difficulty;  // totalDifficulty?
   block.extraData = '0x';
+  block.mixHash = '0x0000000000000000000000000000000000000000000000000000000000000000';
+  block.sha3Uncles = '0x0000000000000000000000000000000000000000000000000000000000000000';
+  block.gasUsed = block.gasUsed || '0x0';
+  if (block.nonce.length != '18') block.nonce = '0x214b5b140139d32a';
+  // special deal for block 0
+  if (block.number === '0x0') {
+    block.timestamp = '0x5f9bbfe0';
+    block.difficulty = '0x1';
+    block.totalDifficulty = '0x1';
+    block.nonce = '0x214b5b140139d32a';
+  }
   // format tx object
   if (
-    block.tranactions &&
-    block.tranactions.length > 0 &&
-    typeof block.tranactions[0] === "object"
+    block.transactions &&
+    block.transactions.length > 0 &&
+    typeof block.transactions[0] === "object"
   ) {
-    for (let tx of block.tranactions) {
-      formatTransaction(tx, networkId, isAddrToHex, isEip155);
+    for (let i in block.transactions) {
+      block.transactions[i].blockHash = block.hash;
+      formatTransaction(block.transactions[i], networkId, isAddrToHex, isEip155);
     }
   }
   delKeys(block, [
@@ -69,30 +83,53 @@ function formatBlock(block, networkId, isAddrToHex, isEip155) {
     "height",
     "powQuality",
     "refereeHashes",
-    "custom"
+    "custom",
+    "posReference",
+    "blockNumber",
   ]);
-  setNull(block, [
-    // "extraData",  // extraData?
-    "mixHash",
-    "sha3Uncles",  // sha3Uncles?
-  ]);
+  // setNull(block, [
+  //   // "extraData",  // extraData?
+  //   "mixHash",
+  //   "sha3Uncles",  // sha3Uncles?
+  // ]);
   return block;
 }
 
 function formatTransaction(tx, networkId, isAddrToHex, isEIP155) {
-  // blockNumber?
   tx.input = tx.data;
   tx.from = formatAddress(tx.from, networkId, isAddrToHex);
   tx.to = formatAddress(tx.to, networkId, isAddrToHex);
+  tx.blockNumber = tx.epochHeight;
+  tx.creates = tx.contractCreated;
+  tx.status = tx.status === '0x0' || tx.status === 0 ? '0x1' : '0x0';
 
   if (isEIP155)
     tx.v = numToHex(Number(tx.v) + Number(tx.chainId) * 2 + 35);
 
+  // TODO: value, gasPrice maybe is a very big number, need use bignumer to convert
+  const hexNumKeys = [
+    'nonce', 
+    'value',
+    'gasPrice',
+    'gas', 
+    'storageLimit', 
+    'epochHeight', 
+    'chainId',
+    'status',
+    'transactionIndex',
+    'v',
+    'blockNumber'
+  ];
+  for (let key of hexNumKeys) {
+    if (tx[key] !== undefined) {
+      tx[key] = numToHex(tx[key]);
+    }
+  }
+
   delKeys(tx, [
     "data",
-    "status"
+    "contractCreated",
   ]);
-  setNull(tx, ["blockNumber"]);
   return tx;
 }
 
@@ -219,7 +256,6 @@ function formatCip37Address(address, networkId) {
 function formatAddress(address, networkId, isToHex) {
   return isToHex ? formatHexAddress(address) : formatCip37Address(address, networkId)
 }
-
 
 module.exports = {
   formatCommonInput,

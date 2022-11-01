@@ -2,11 +2,10 @@ const { createScaffoldMiddleware } = require('json-rpc-engine');
 const { Conflux, Transaction, sign } = require('js-conflux-sdk');
 const _ = require('lodash');
 const { ethers } = require('ethers');
-const format = require('../utils/format');
-const { numToHex, delKeys, createAsyncMiddleware } = require('../utils');
-const adaptErrorMsg = require('../utils/adaptErrorMsg')
-const ethRawTxConverter = require('../utils/ethRawTxConverter');
 const { RLP } = require("ethers/lib/utils");
+const format = require('../utils/format');
+const { numToHex, delKeys, createAsyncMiddleware, isHex } = require('../utils');
+const adaptErrorMsg = require('../utils/adaptErrorMsg')
 
 const defaultOptions = {
   respAddressBeHex: false,
@@ -59,32 +58,11 @@ function cfx2Eth(options = defaultOptions) {
   // }
 
   async function getNetworkId() {
-    networkId = networkId || (await cfx.getStatus()).networkId
+    networkId = (networkId || (await cfx.getStatus()).networkId)
     return networkId
   }
 
   async function sendRawTransaction(req, res, next) {
-    if (!isCfxTransaction(req.params[0])) {
-      const { info: tx, rawTx } = ethRawTxConverter(req.params[0]);
-      // check balance
-      const gas = ethers.BigNumber.from(tx.gas);
-      const gasPrice = ethers.BigNumber.from(tx.gasPrice);
-      const value = ethers.BigNumber.from(tx.value);
-      const required = gas.mul(gasPrice).add(value);
-      const balance = await cfx.getBalance(tx.from);
-      if (ethers.BigNumber.from(balance).lt(required)) {
-        throw new Error('insufficient funds for gas * price + value');
-      }
-      // check target contract exist
-      if (tx.to && tx.to.startsWith('0x8')) {
-        const code = await cfx.getCode(tx.to);
-        if (code === '0x') {
-          throw new Error('contract not exist');
-        }
-      }
-      req.params[0] = rawTx;
-    }
-
     await next();
     // adapt error message
     if (res._error) {
@@ -108,13 +86,18 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function call(req, res, next) {
+    await formatEpochOfParams(req.params, 1);
     format.formatCommonInput(req.params, await getNetworkId());
+    // set epochHeight of call tx
+    if (req.params[1] !== undefined && isHex(req.params[1])) {
+      req.params[0].epochHeight = req.params[1];
+    }
     await next();
   }
 
   async function estimateGas(req, res, next) {
-
-    req.params = format.formatCommonInput(req.params, await getNetworkId());
+    await formatEpochOfParams(req.params, 1);
+    format.formatCommonInput(req.params, await getNetworkId());
     await next();
     if (!res.result) return;
     res.result = res.result.gasUsed;
@@ -129,31 +112,45 @@ function cfx2Eth(options = defaultOptions) {
   async function getBlockByHash(req, res, next) {
     await next();
     if (!res.result) return;
-    format.formatBlock(res.result);
+    let epochNumber = res.result.epochNumber;
+    let pivotBlock = await _getEpochAsBlock(epochNumber, req.params[1]);
+    res.result.transactions = pivotBlock.transactions;
+    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex, respTxBeEip155);
   }
 
   async function getBlockByNumber(req, res, next) {
     format.formatEpochOfParams(req.params, 0);
     await next();
     if (!res.result) return;
-    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex);
+    let epochNumber = res.result.epochNumber;
+    let pivotBlock = await _getEpochAsBlock(epochNumber, req.params[1]);
+    res.result.transactions = pivotBlock.transactions;
+    format.formatBlock(res.result, await getNetworkId(), respAddressBeHex, respTxBeEip155);
   }
 
   async function getBlockTransactionCountByHash(req, res, next) {
+    req.params[1] = false;
     await next();
     if (!res.result) return;
+    let epochNumber = res.result.epochNumber;
+    let pivotBlock = await _getEpochAsBlock(epochNumber);
+    res.result = pivotBlock;
     res.result = numToHex(res.result.transactions.length);
   }
 
   async function getBlockTransactionCountByNumber(req, res, next) {
+    req.params[1] = false;
     await next();
     if (!res.result) return;
-    res.result = util.numToHex(res.result.transactions.length);
+    let epochNumber = res.result.epochNumber;
+    let pivotBlock = await _getEpochAsBlock(epochNumber);
+    res.result = pivotBlock;
+    res.result = numToHex(res.result.transactions.length);
   }
 
   async function getCode(req, res, next) {
     req.params[0] = await formatAddress(req.params[0]);
-    format.formatEpochOfParams(req.params, 1);
+    await formatEpochOfParams(req.params, 1);
     // console.log("getcode formated params:", req.params)
     await next();
     // console.log("getcode next response:", res)
@@ -179,7 +176,7 @@ function cfx2Eth(options = defaultOptions) {
   async function getStorageAt(req, res, next) {
     req.params[0] = await formatAddress(req.params[0]);
     req.params[1] = ethers.utils.hexZeroPad(req.params[1], 32);
-    format.formatEpochOfParams(req.params, 2);
+    await formatEpochOfParams(req.params, 2);
     await next();
     res.result = res.result || "0x"
   }
@@ -189,6 +186,9 @@ function cfx2Eth(options = defaultOptions) {
     req.params[1] = true;
     await next();
     if (!res.result) return;
+    let epochNumber = res.result.epochNumber;
+    let pivotBlock = await _getEpochAsBlock(epochNumber);
+    res.result = pivotBlock;
     res.result = res.result.transactions[index];
     await _formatTxAndFeedBlockNumber(res.result);
   }
@@ -198,6 +198,9 @@ function cfx2Eth(options = defaultOptions) {
     req.params[1] = true;
     await next();
     if (!res.result) return;
+    let epochNumber = res.result.epochNumber;
+    let pivotBlock = await _getEpochAsBlock(epochNumber);
+    res.result = pivotBlock;
     res.result = res.result.transactions[index];
     await _formatTxAndFeedBlockNumber(res.result);
   }
@@ -212,21 +215,20 @@ function cfx2Eth(options = defaultOptions) {
     req.params[0] = await formatAddress(req.params[0], respAddressBeHex);
     const isPending = req.params[1] === 'pending';
     if (isPending) {
-      req.method = 'cfx_getAccountPendingInfo';
+      req.method = 'txpool_nextNonce';
       req.params = req.params.slice(0, 1);
     } else {
-      format.formatEpochOfParams(req.params, 1);
+      await formatEpochOfParams(req.params, 1);
     }
     await next();
-    if (isPending) {
-      res.result = res.result.localNonce;
-    }
   }
 
   async function getTransactionReceipt(req, res, next) {
     await next();
     if (!res.result) return;
     let txReceipt = res.result;
+    let block = await cfx.getBlockByEpochNumber(txReceipt.epochNumber);
+    txReceipt.blockHash = block.hash;
     txReceipt.contractCreated = await formatAddress(txReceipt.contractCreated, respAddressBeHex);
     txReceipt.from = await formatAddress(txReceipt.from, respAddressBeHex);
     txReceipt.to = await formatAddress(txReceipt.to, respAddressBeHex);
@@ -301,7 +303,7 @@ function cfx2Eth(options = defaultOptions) {
 
   async function getBalance(req, res, next) {
     req.params[0] = await formatAddress(req.params[0]);
-    format.formatEpochOfParams(req.params, 1);
+    await formatEpochOfParams(req.params, 1);
     await next();
   }
 
@@ -343,8 +345,8 @@ function cfx2Eth(options = defaultOptions) {
   async function _formatFilter(filter) {
     let { fromBlock, toBlock, blockHash, blockHashes, address } = filter
 
-    filter.fromEpoch = format.formatEpoch(fromBlock);
-    filter.toEpoch = format.formatEpoch(toBlock);
+    filter.fromEpoch = format.formatEpoch(fromBlock); // TODO support eip1898
+    filter.toEpoch = format.formatEpoch(toBlock); // TODO support eip1898
 
     if (blockHash) {
       if (_.isArray(blockHashes)) {
@@ -367,6 +369,49 @@ function cfx2Eth(options = defaultOptions) {
 
   async function formatAddress(address, toHex) {
     return format.formatAddress(address, await getNetworkId(), toHex)
+  }
+
+  async function formatEpochOfParams(params, index) {
+    /*
+      process EIP-1898 https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1898.md
+      { "blockNumber": "0x0" }
+      { "blockHash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3" }
+    */
+    if (params[index] && typeof params[index] === 'object') {
+      if (params[index].blockHash) {
+        const block = await cfx.getBlockByHash(params[index].blockHash);
+        if (!block) throw new Error('block not found');
+        params[index] = block.epochNumber;
+      }
+      if (params[index].blockNumber) {
+        params[index] = params[index].blockNumber;
+      }
+    }
+    
+    format.formatEpochOfParams(params, index);
+  }
+
+  // NOTE: gasLimit, gasUsed, size, transactionsRoot and other fields is not adapted, direct use the pivot block
+  async function _getEpochAsBlock(epochNumber, includeTx = false) {
+    let blockHashes = await cfx.cfx.getBlocksByEpoch(epochNumber);
+    if (blockHashes.length === 0) return null;
+    let txes = [];
+    let blocks = [];
+    // TODO: use batch rpc call
+    for(let hash of blockHashes) {
+      let block = await cfx.getBlockByHash(hash, true);
+      if (block) {
+        blocks.push(block);
+        txes = txes.concat(block.transactions);
+      }
+    }
+    if (blocks.length === 0) return null;
+    let pivotBlock = blocks[blocks.length - 1];
+    pivotBlock.transactions = txes.filter(tx => tx.status === 0);
+    if (!includeTx) {
+      pivotBlock.transactions = pivotBlock.transactions.map(tx => tx.hash);
+    }
+    return pivotBlock;
   }
 
   function isCfxTransaction(rawTransaction) {

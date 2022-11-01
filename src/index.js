@@ -3,11 +3,11 @@ const eth2Cfx = require('./middlewares');
 const sendJSONRPC = require('./middlewares/send');
 const logger = require('./middlewares/logger')
 
-
 const defaultOption = {
   respAddressBeHex: false,
   respTxBeEip155: false
 }
+
 class JsonRpcProxy {
 
   constructor(url, options = defaultOption) {
@@ -28,12 +28,12 @@ class JsonRpcProxy {
   }
 
   // Comment because of leads ethers error
-  // request(req, callback) {
-  //   if (!callback) {
-  //     return this.engine.handle(req);
-  //   }
-  //   this.engine.handle(req, callback);
-  // }
+  /* request(req, callback) {
+    if (!callback) {
+      return this.engine.handle(req);
+    }
+    this.engine.handle(req, callback);
+  } */
 }
 
 module.exports = JsonRpcProxy;

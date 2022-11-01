@@ -9,7 +9,6 @@ function methodMapMiddleware() {
 
 module.exports = methodMapMiddleware;
 
-
 const ETH_TO_CFX_METHOD_MAPPER = {
   eth_blockNumber: 'cfx_epochNumber',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',

@@ -43,6 +43,9 @@ function cfx2Eth(options = defaultOptions) {
     'web3_sha3': createAsyncMiddleware(webSha3),
     'eth_sendRawTransaction': createAsyncMiddleware(sendRawTransaction),
     'eth_subscribe': createAsyncMiddleware(subscribe),
+    'eth_maxPriorityFeePerGas': createAsyncMiddleware(getMaxPriorityFeePerGas),
+    'eth_getUncleCountByBlockHash': createAsyncMiddleware(getUncleCount),
+    'eth_getUncleCountByBlockNumber': createAsyncMiddleware(getUncleCount),
     //eth_ => cfx_ 
     // 'eth_unsubscribe': createAsyncMiddleware(adaptMethod), 
     // 'eth_gasPrice': createAsyncMiddleware(adaptMethod),
@@ -60,6 +63,14 @@ function cfx2Eth(options = defaultOptions) {
   async function getNetworkId() {
     networkId = (networkId || (await cfx.getStatus()).networkId)
     return networkId
+  }
+
+  async function getMaxPriorityFeePerGas(req, res, next) {
+    res.result = '0x3b9aca00'; // 1G
+  }
+
+  async function getUncleCount(req, res, next) {
+    res.result = '0x0';
   }
 
   async function sendRawTransaction(req, res, next) {

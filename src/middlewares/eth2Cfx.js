@@ -212,7 +212,7 @@ function cfx2Eth(options = defaultOptions) {
   }
 
   async function getTransactionCount(req, res, next) {
-    req.params[0] = await formatAddress(req.params[0], respAddressBeHex);
+    req.params[0] = await formatAddress(req.params[0]);
     const isPending = req.params[1] === 'pending';
     if (isPending) {
       req.method = 'txpool_nextNonce';

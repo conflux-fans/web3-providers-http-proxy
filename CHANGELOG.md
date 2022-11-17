@@ -7,6 +7,8 @@
 3. Pass through `eth_sendRawTransaction` params
 4. Fix `eth_getTransactionCount`
 5. Add support for `eth_maxPriorityFeePerGas`, `eth_getUncleCountByBlockHash`, `eth_getUncleCountByBlockNumber`
+6. Block add field `baseFeePerGas` set value to `0x0`
+7. Add support for block number tag `safe` and `finalized`
 
 ## v0.5.0
 

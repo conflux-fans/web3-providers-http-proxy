@@ -5,14 +5,18 @@ const { format } = require("js-conflux-sdk");
 const EPOCH_MAP = {
   earliest: "earliest",
   latest: "latest_state",
-  pending: "latest_state"  // TODO there is no correct 'pending' tag in conflux
+  pending: "latest_state",  // TODO there is no correct 'pending' tag in conflux
+  safe: "latest_confirmed",
+  finalized: "latest_finalized",
 };
 
 const EMPTY_LOG_BLOOM = '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
 
 function formatEpoch(tag) {
-  if (!tag || tag === 'latest_state') return tag;
-  return EPOCH_MAP[tag] || numToHex(tag);
+  if (!tag) return tag;
+  if (EPOCH_MAP[tag]) return EPOCH_MAP[tag];
+  if (tag === 'latest_checkpoint' || tag === 'latest_mined' || tag === 'latest_state' || tag === 'latest_confirmed' || tag === 'latest_finalized') return tag;
+  return numToHex(tag);
 }
 
 function formatEpochOfParams(params, index) {
@@ -54,6 +58,7 @@ function formatBlock(block, networkId, isAddrToHex, isEip155) {
   block.mixHash = '0x0000000000000000000000000000000000000000000000000000000000000000';
   block.sha3Uncles = '0x0000000000000000000000000000000000000000000000000000000000000000';
   block.gasUsed = block.gasUsed || '0x0';
+  block.baseFeePerGas = '0x0';
   if (block.nonce.length != '18') block.nonce = '0x214b5b140139d32a';
   // special deal for block 0
   if (block.number === '0x0') {

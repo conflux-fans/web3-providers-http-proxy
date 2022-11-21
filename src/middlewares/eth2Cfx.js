@@ -176,7 +176,7 @@ function cfx2Eth(options = defaultOptions) {
 
   async function getLogs(req, res, next) {
     if (req.params.length > 0) {
-      _formatFilter(req.params[0]);
+      await _formatFilter(req.params[0]);
     }
     await next();
     if (!res.result) return;
@@ -330,7 +330,7 @@ function cfx2Eth(options = defaultOptions) {
   async function subscribe(req, res, next) {
     const topic = req.params[0];
     if (topic === 'logs' && req.params[1]) {
-      _formatFilter(req.params[1]);
+      await _formatFilter(req.params[1]);
     }
     await next();
     /* if (topic === 'logs') {
@@ -368,7 +368,7 @@ function cfx2Eth(options = defaultOptions) {
     }
     if (address) {
       if (_.isArray(address)) {
-        filter.address = await Promise.all(address.map(formatAddress));
+        filter.address = await Promise.all(address.map(async addr => await formatAddress(addr)));
       } else {
         filter.address = await formatAddress(address);
       }

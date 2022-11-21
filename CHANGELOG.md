@@ -9,6 +9,7 @@
 5. Add support for `eth_maxPriorityFeePerGas`, `eth_getUncleCountByBlockHash`, `eth_getUncleCountByBlockNumber`
 6. Block add field `baseFeePerGas` set value to `0x0`
 7. Add support for block number tag `safe` and `finalized`
+8. Fix `getLogs` multiple address filter bug
 
 ## v0.5.0
 

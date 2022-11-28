@@ -406,17 +406,11 @@ function cfx2Eth(options = defaultOptions) {
   async function _getEpochAsBlock(epochNumber, includeTx = false) {
     let blockHashes = await cfx.cfx.getBlocksByEpoch(epochNumber);
     if (blockHashes.length === 0) return null;
+    let blocks = await _batchGetBlocks(blockHashes);
     let txes = [];
-    let blocks = [];
-    // TODO: use batch rpc call
-    for(let hash of blockHashes) {
-      let block = await cfx.getBlockByHash(hash, true);
-      if (block) {
-        blocks.push(block);
-        txes = txes.concat(block.transactions);
-      }
+    for(let block of blocks) {
+      txes = txes.concat(block.transactions);
     }
-    if (blocks.length === 0) return null;
     let pivotBlock = blocks[blocks.length - 1];
     pivotBlock.transactions = txes.filter(tx => tx.status === 0);
     if (!includeTx) {
@@ -425,11 +419,20 @@ function cfx2Eth(options = defaultOptions) {
     return pivotBlock;
   }
 
-  function isCfxTransaction(rawTransaction) {
-    let [utx] = RLP.decode(rawTransaction)
-    return utx.length == 9
+  async function _batchGetBlocks(blockHashes) {
+    const batcher = cfx.BatchRequest();
+    for(let hash of blockHashes) {
+      batcher.add(cfx.cfx.getBlockByHash.request(hash, true));
+    }
+    const blocks = await batcher.execute();
+    return blocks;
   }
 
 }
 
 module.exports = cfx2Eth;
+
+/* function isCfxTransaction(rawTransaction) {
+  let [utx] = RLP.decode(rawTransaction)
+  return utx.length == 9
+} */

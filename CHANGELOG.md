@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.7.18
+
+1. Use batch RPC when get epoch blocks
+
 ## v0.7.x
 
 1. Adapt block related methods to include all tx from one Epoch

@@ -12,6 +12,7 @@ module.exports = methodMapMiddleware;
 const ETH_TO_CFX_METHOD_MAPPER = {
   eth_blockNumber: 'cfx_epochNumber',
   eth_sendRawTransaction: 'cfx_sendRawTransaction',
+  eth_submitTransaction: 'cfx_sendRawTransaction',
   eth_sendTransaction: 'cfx_sendTransaction',
   eth_getBalance: 'cfx_getBalance',
   eth_call: 'cfx_call',
@@ -39,7 +40,8 @@ const ETH_TO_CFX_METHOD_MAPPER = {
   web3_sha3: 'web3_sha3',
   eth_subscribe: 'cfx_subscribe',
   eth_unsubscribe: 'cfx_unsubscribe',
-  personal_unlockAccount: 'unlock_account'
+  personal_unlockAccount: 'unlock_account',
+  // eth_protocolVersion: ''
 };
 
 function _mapETHMethod(method) {

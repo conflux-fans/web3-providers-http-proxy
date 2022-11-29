@@ -409,6 +409,7 @@ function cfx2Eth(options = defaultOptions) {
     let blocks = await _batchGetBlocks(blockHashes);
     let txes = [];
     for(let block of blocks) {
+      if (!block.transactions) continue;
       txes = txes.concat(block.transactions);
     }
     let pivotBlock = blocks[blocks.length - 1];

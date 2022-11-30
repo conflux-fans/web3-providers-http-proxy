@@ -140,7 +140,6 @@ function formatTransaction(tx, networkId, isAddrToHex, isEIP155) {
 
 function formatLog(l, networkId, isAddrToHex) {
   l.address = formatAddress(l.address, networkId, isAddrToHex);
-  l.logIndex = l.transactionLogIndex;
   l.blockNumber = l.epochNumber;
   delKeys(l, [
     'transactionLogIndex',

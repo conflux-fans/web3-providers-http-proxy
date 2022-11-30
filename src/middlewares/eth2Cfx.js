@@ -2,7 +2,7 @@ const { createScaffoldMiddleware } = require('json-rpc-engine');
 const { Conflux, Transaction, sign } = require('js-conflux-sdk');
 const _ = require('lodash');
 const { ethers } = require('ethers');
-const { RLP } = require("ethers/lib/utils");
+// const { RLP } = require("ethers/lib/utils");
 const format = require('../utils/format');
 const { numToHex, delKeys, createAsyncMiddleware, isHex } = require('../utils');
 const adaptErrorMsg = require('../utils/adaptErrorMsg')
@@ -181,6 +181,7 @@ function cfx2Eth(options = defaultOptions) {
     await next();
     if (!res.result) return;
     const networkId = await getNetworkId()
+    await _updateLogBlockHash(res.result);
     res.result.forEach(l => format.formatLog(l, networkId, respAddressBeHex));
   }
 
@@ -350,7 +351,9 @@ function cfx2Eth(options = defaultOptions) {
     format.formatTransaction(tx, await getNetworkId(), respAddressBeHex, respTxBeEip155);
     if (!tx.blockHash) return;
     const block = await cfx.getBlockByHash(tx.blockHash);
+    const epoch = await cfx.getBlockByEpochNumber(block.epochNumber);
     tx.blockNumber = numToHex(block.epochNumber);
+    tx.blockHash = epoch.hash;
   }
 
   async function _formatFilter(filter) {
@@ -413,6 +416,11 @@ function cfx2Eth(options = defaultOptions) {
       txes = txes.concat(block.transactions);
     }
     let pivotBlock = blocks[blocks.length - 1];
+    // update tx epochHeight and blockHash to pivot block
+    for(let tx of txes) {
+      tx.epochHeight = pivotBlock.epochNumber;
+      tx.blockHash = pivotBlock.hash;
+    }
     pivotBlock.transactions = txes.filter(tx => tx.status === 0);
     if (!includeTx) {
       pivotBlock.transactions = pivotBlock.transactions.map(tx => tx.hash);
@@ -427,6 +435,22 @@ function cfx2Eth(options = defaultOptions) {
     }
     const blocks = await batcher.execute();
     return blocks;
+  }
+
+  async function _updateLogBlockHash(logs) {
+    const epochNumbers = _.uniq(logs.map(log => log.epochNumber));
+    const batcher = cfx.BatchRequest();
+    for(let number of epochNumbers) {
+      batcher.add(cfx.cfx.getBlockByEpochNumber.request(number, false));
+    }
+    const blocks = await batcher.execute();
+    let epochNumberMap = {};
+    for(let block of blocks) {
+      epochNumberMap[numToHex(block.epochNumber)] = block.hash;
+    }
+    for(let i in logs) {
+      logs[i].blockHash = epochNumberMap[logs[i].epochNumber];
+    }
   }
 
 }

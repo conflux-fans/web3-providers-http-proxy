@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.7.19
+
+1. Update tx.blockHash to pivot block hash
+2. Update block.transactions blockNumber, blockHash to pivot block hash
+3. Update eth_getLogs response logs blockHash to pivot block hash
+
 ## v0.7.18
 
 1. Use batch RPC when get epoch blocks

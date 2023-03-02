@@ -446,7 +446,8 @@ function cfx2Eth(options = defaultOptions) {
     const blocks = await batcher.execute();
     let epochNumberMap = {};
     for(let block of blocks) {
-      epochNumberMap[numToHex(block.epochNumber)] = block.hash;
+      // NOTE: if not found block.epochNumber use 0
+      epochNumberMap[numToHex(block.epochNumber || 0)] = block.hash;
     }
     for(let i in logs) {
       logs[i].blockHash = epochNumberMap[logs[i].epochNumber];

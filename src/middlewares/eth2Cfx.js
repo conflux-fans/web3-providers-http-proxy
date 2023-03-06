@@ -13,6 +13,9 @@ const defaultOptions = {
   url: undefined
 }
 
+// transaction index cache
+const TransactionIndexCache = {};
+
 function cfx2Eth(options = defaultOptions) {
 
   const cfx = new Conflux(options);
@@ -182,6 +185,7 @@ function cfx2Eth(options = defaultOptions) {
     if (!res.result) return;
     const networkId = await getNetworkId()
     await _updateLogBlockHash(res.result);
+    await _updateLogTxIndex(res.result);
     res.result.forEach(l => format.formatLog(l, networkId, respAddressBeHex));
   }
 
@@ -239,7 +243,7 @@ function cfx2Eth(options = defaultOptions) {
     await next();
     if (!res.result) return;
     let txReceipt = res.result;
-    let block = await cfx.getBlockByEpochNumber(txReceipt.epochNumber);
+    let block = await _getEpochAsBlock(txReceipt.epochNumber, false);
     txReceipt.blockHash = block.hash;
     txReceipt.contractCreated = await formatAddress(txReceipt.contractCreated, respAddressBeHex);
     txReceipt.from = await formatAddress(txReceipt.from, respAddressBeHex);
@@ -247,7 +251,8 @@ function cfx2Eth(options = defaultOptions) {
     txReceipt.gasUsed = txReceipt.gasFee;  // NOTE: use gasFee as gasUsed
     txReceipt.contractAddress = txReceipt.contractCreated;
     txReceipt.blockNumber = txReceipt.epochNumber;
-    txReceipt.transactionIndex = txReceipt.index;
+    let txIndex = await getTxBlockIndex(txReceipt.transactionHash, txReceipt.epochNumber);
+    txReceipt.transactionIndex = txIndex || txReceipt.index;
     txReceipt.status = Number.parseInt(txReceipt.outcomeStatus)
       ? "0x0"
       : "0x1"; // conflux and eth status code is opposite
@@ -265,7 +270,8 @@ function cfx2Eth(options = defaultOptions) {
           blockNumber: txReceipt.blockNumber,
           blockHash: txReceipt.blockHash,
           transactionHash: txReceipt.transactionHash,
-          transactionIndex: txReceipt.transactionIndex
+          transactionIndex: txReceipt.transactionIndex,
+          removed: false,
         });
       }
     }
@@ -416,12 +422,18 @@ function cfx2Eth(options = defaultOptions) {
       txes = txes.concat(block.transactions);
     }
     let pivotBlock = blocks[blocks.length - 1];
+    txes = txes.filter(tx => tx.status === 0);
     // update tx epochHeight and blockHash to pivot block
-    for(let tx of txes) {
+    for(let i in txes) {
+      let tx = txes[i];
       tx.epochHeight = pivotBlock.epochNumber;
       tx.blockHash = pivotBlock.hash;
+      tx.transactionIndex = `0x${i.toString(16)}`;
+
+      // UPDATE tx index cache
+      TransactionIndexCache[tx.hash] = tx.transactionIndex;
     }
-    pivotBlock.transactions = txes.filter(tx => tx.status === 0);
+    pivotBlock.transactions = txes;
     if (!includeTx) {
       pivotBlock.transactions = pivotBlock.transactions.map(tx => tx.hash);
     }
@@ -437,6 +449,7 @@ function cfx2Eth(options = defaultOptions) {
     return blocks;
   }
 
+  // update log's blockHash to pivot block hash
   async function _updateLogBlockHash(logs) {
     const epochNumbers = _.uniq(logs.map(log => log.epochNumber));
     const batcher = cfx.BatchRequest();
@@ -454,7 +467,29 @@ function cfx2Eth(options = defaultOptions) {
     }
   }
 
+  async function _updateLogTxIndex(logs) {
+    for(let i in logs) {
+      const log = logs[i];
+      if (log.transactionHash) {
+        log.transactionIndex = await getTxBlockIndex(log.transactionHash, log.epochNumber);
+      }
+    }
+  }
+
+  // NOTE: blockNum is the block that include the tx
+  async function getTxBlockIndex(txHash, blockNum) {
+    if (TransactionIndexCache[txHash]) return TransactionIndexCache[txHash];
+    const block = await _getEpochAsBlock(blockNum);
+    const txes = block.transactions;
+    for(let i in txes) {
+      TransactionIndexCache[txes[i].hash] = txes[i].transactionIndex;
+    }
+    return TransactionIndexCache[txHash];
+  }
+
 }
+
+
 
 module.exports = cfx2Eth;
 
